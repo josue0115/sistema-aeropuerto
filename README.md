@@ -37,3 +37,6 @@ DB_PORT=3306
 DB_DATABASE=nombre_de_tu_base_de_datos
 DB_USERNAME=nombre_de_usuario
 DB_PASSWORD=contraseña
+
+## Link para descargar composer
+https://getcomposer.org/Composer-Setup.exe
