@@ -57,6 +57,8 @@ class EscalaController extends Controller
             'HoraLlegada' => 'required|date_format:H:i|after:HoraSalida',
             'TiempoEspera' => 'required|integer|min:0',
             'Estado' => 'required|string|max:50',
+        ], [
+            'HoraLlegada.after' => 'La hora de llegada debe ser posterior a la hora de salida.',
         ]);
 
         Escala::create($request->all());
@@ -75,6 +77,8 @@ class EscalaController extends Controller
             'HoraLlegada' => 'required|date_format:H:i|after:HoraSalida',
             'TiempoEspera' => 'required|integer|min:0',
             'Estado' => 'required|string|max:50',
+        ], [
+            'HoraLlegada.after' => 'La hora de llegada debe ser posterior a la hora de salida.',
         ]);
 
         $escala->update($request->all());

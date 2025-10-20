@@ -24,7 +24,7 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label>Código Vuelo</label>
+                    <label>Vuelo</label>
                     <select name="IdVuelo" class="form-select" required>
                         <option value="">Seleccione</option>
                         @foreach($vuelos as $vuelo)
@@ -33,7 +33,7 @@
                     </select>
                 </div>
                 <div class="mb-3">
-                    <label>Código Aeropuerto</label>
+                    <label>Aeropuerto</label>
                     <select name="IdAeropuerto" class="form-select" required>
                         <option value="">Seleccione</option>
                         @foreach($aeropuertos as $aeropuerto)
