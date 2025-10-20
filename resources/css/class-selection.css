@@ -1,0 +1,46 @@
+.class-selection {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.class-option {
+    display: flex;
+    align-items: center;
+    padding: 15px;
+    border: 2px solid #e9ecef;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    background-color: #fff;
+}
+
+.class-option:hover {
+    border-color: #007bff;
+    background-color: #f8f9fa;
+}
+
+.class-option.selected {
+    border-color: #007bff;
+    background-color: #e7f3ff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.class-icon {
+    font-size: 2rem;
+    margin-right: 15px;
+    min-width: 50px;
+    text-align: center;
+}
+
+.class-info h6 {
+    margin: 0 0 5px 0;
+    font-weight: 600;
+    color: #495057;
+}
+
+.class-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
