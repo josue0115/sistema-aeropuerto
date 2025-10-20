@@ -5,6 +5,9 @@ use App\Http\Controllers\AerolineaController;
 use App\Http\Controllers\AvionController;
 use App\Http\Controllers\PersonalController;
 use App\Http\Controllers\MantenimientoController;
+use App\Http\Controllers\VueloController;
+use App\Http\Controllers\HorarioController;
+use App\Http\Controllers\EscalaController;
 use Illuminate\Support\Facades\Route;
 
 
@@ -90,3 +93,83 @@ Route::get('/mantenimiento/{mantenimiento}/delete', [MantenimientoController::cl
 Route::post('/mantenimiento/store', [MantenimientoController::class, 'store'])->name('mantenimiento.store');
 Route::put('/mantenimiento/update/{mantenimiento}', [MantenimientoController::class, 'update'])->name('mantenimiento.update');
 Route::delete('/mantenimiento/destroy/{mantenimiento}', [MantenimientoController::class, 'destroy'])->name('mantenimiento.destroy');
+
+// Rutas para Vuelo
+// Listar vuelos
+Route::get('/vuelo', [VueloController::class, 'index'])->name('vuelo.index');
+// Mostrar formulario para crear
+Route::get('/vuelo/create', [VueloController::class, 'create'])->name('vuelo.create');
+// Mostrar detalles
+Route::get('/vuelo/{vuelo}', [VueloController::class, 'show'])->name('vuelo.show');
+// Mostrar formulario para editar
+Route::get('/vuelo/{vuelo}/edit', [VueloController::class, 'edit'])->name('vuelo.edit');
+// Mostrar confirmación para eliminar
+Route::get('/vuelo/{vuelo}/delete', [VueloController::class, 'delete'])->name('vuelo.delete');
+// Guardar, actualizar y eliminar
+Route::post('/vuelo', [VueloController::class, 'store'])->name('vuelo.store');
+Route::put('/vuelo/{vuelo}', [VueloController::class, 'update'])->name('vuelo.update');
+Route::delete('/vuelo/{vuelo}', [VueloController::class, 'destroy'])->name('vuelo.destroy');
+
+// Rutas para Horario
+// Listar horarios
+Route::get('/horario/Listar', [HorarioController::class, 'index'])->name('horario.index');
+// Mostrar formulario para crear
+Route::get('/horario/create', [HorarioController::class, 'create'])->name('horario.create');
+// Mostrar detalles
+Route::get('/horario/{horario}', [HorarioController::class, 'show'])->name('horario.show');
+// Mostrar formulario para editar
+Route::get('/horario/{horario}/edit', [HorarioController::class, 'edit'])->name('horario.edit');
+// Mostrar confirmación para eliminar
+Route::get('/horario/{horario}/delete', [HorarioController::class, 'delete'])->name('horario.delete');
+// Guardar, actualizar y eliminar
+Route::post('/horario', [HorarioController::class, 'store'])->name('horario.store');
+Route::put('/horario/{horario}', [HorarioController::class, 'update'])->name('horario.update');
+Route::delete('/horario/{horario}', [HorarioController::class, 'destroy'])->name('horario.destroy');
+
+// Rutas para Escala
+// Listar escalas
+Route::get('/escala/Listar', [EscalaController::class, 'index'])->name('escala.index');
+// Mostrar formulario para crear
+Route::get('/escala/create', [EscalaController::class, 'create'])->name('escala.create');
+// Mostrar detalles
+Route::get('/escala/{escala}', [EscalaController::class, 'show'])->name('escala.show');
+// Mostrar formulario para editar
+Route::get('/escala/{escala}/edit', [EscalaController::class, 'edit'])->name('escala.edit');
+// Mostrar confirmación para eliminar
+Route::get('/escala/{escala}/delete', [EscalaController::class, 'delete'])->name('escala.delete');
+// Guardar, actualizar y eliminar
+Route::post('/escala', [EscalaController::class, 'store'])->name('escala.store');
+Route::put('/escala/{escala}', [EscalaController::class, 'update'])->name('escala.update');
+Route::delete('/escala/{escala}', [EscalaController::class, 'destroy'])->name('escala.destroy');
+
+// Rutas para Horario
+// Listar horarios
+Route::get('/horario/Listar', [HorarioController::class, 'Listar'])->name('horario.listar');
+// Mostrar formulario para crear
+Route::get('/horario/create', [HorarioController::class, 'create'])->name('horario.create');
+// Mostrar detalles
+Route::get('/horario/{horario}', [HorarioController::class, 'show'])->name('horario.show');
+// Mostrar formulario para editar
+Route::get('/horario/{horario}/edit', [HorarioController::class, 'edit'])->name('horario.edit');
+// Mostrar confirmación para eliminar
+Route::get('/horario/{horario}/delete', [HorarioController::class, 'delete'])->name('horario.delete');
+// Guardar, actualizar y eliminar
+Route::post('/horario', [HorarioController::class, 'store'])->name('horario.store');
+Route::put('/horario/{horario}', [HorarioController::class, 'update'])->name('horario.update');
+Route::delete('/horario/{horario}', [HorarioController::class, 'destroy'])->name('horario.destroy');
+
+// Rutas para Horario
+// Listar horarios
+Route::get('/horario', [HorarioController::class, 'index'])->name('horario.index');
+// Mostrar formulario para crear
+Route::get('/horario/create', [HorarioController::class, 'create'])->name('horario.create');
+// Mostrar detalles
+Route::get('/horario/{horario}', [HorarioController::class, 'show'])->name('horario.show');
+// Mostrar formulario para editar
+Route::get('/horario/{horario}/edit', [HorarioController::class, 'edit'])->name('horario.edit');
+// Mostrar confirmación para eliminar
+Route::get('/horario/{horario}/delete', [HorarioController::class, 'delete'])->name('horario.delete');
+// Guardar, actualizar y eliminar
+Route::post('/horario', [HorarioController::class, 'store'])->name('horario.store');
+Route::put('/horario/{horario}', [HorarioController::class, 'update'])->name('horario.update');
+Route::delete('/horario/{horario}', [HorarioController::class, 'destroy'])->name('horario.destroy');
