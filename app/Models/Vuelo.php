@@ -3,18 +3,20 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use App\Models\Aeropuerto;
+use App\Models\Avion;
 
 class Vuelo extends Model
 {
-    protected $table = 'vuelo';
-    protected $primaryKey = 'IdVuelo';
+    protected $table = 'vuelos';
+    protected $primaryKey = 'idVuelo';
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
         'IdAvion',
-        'AeropuertoOrigen',
-        'AeropuertoDestino',
+        'idAeropuertoOrigen',
+        'idAeropuertoDestino',
         'FechaSalida',
         'FechaLlegada',
         'Precio',
@@ -30,12 +32,22 @@ class Vuelo extends Model
     // Relación con Aeropuerto Origen
     public function aeropuertoOrigen()
     {
-        return $this->belongsTo(Aeropuerto::class, 'AeropuertoOrigen', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoOrigen', 'IdAeropuerto');
     }
 
     // Relación con Aeropuerto Destino
     public function aeropuertoDestino()
     {
-        return $this->belongsTo(Aeropuerto::class, 'AeropuertoDestino', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoDestino', 'IdAeropuerto');
+    }
+
+    public static function listar()
+    {
+        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')->get();
+    }
+
+    public static function obtenerPorId($id)
+    {
+        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')->find($id);
     }
 }

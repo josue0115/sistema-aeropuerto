@@ -2,17 +2,25 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Aeropuerto;
+use App\Models\Aeropuertos;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 
 class AeropuertoController extends Controller
 {
+
+    public function index()
+    {
+        $aeropuertos = Aeropuerto::listar();
+        return view('aeropuertos.index', compact('aeropuertos'));
+    }
+
     // Mostrar la lista de aeropuertos
     public function Listar()
     {
         $aeropuertos = Aeropuerto::all();
         // La vista está en resources/views/Aeropuerto/Listar.blade.php
-        return view('Aeropuerto.Listar', compact('aeropuertos'));
+        return view('Aeropuertos.Listar', compact('aeropuertos'));
     }
 
     // Mostrar formulario para crear aeropuerto
@@ -24,19 +32,19 @@ class AeropuertoController extends Controller
     // Mostrar detalles de un aeropuerto
     public function show(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.show', compact('aeropuerto'));
+        return view('Aeropuerto.show', compact('aeropuertos'));
     }
 
     // Mostrar formulario para editar aeropuerto
     public function edit(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.Edit', compact('aeropuerto'));
+        return view('Aeropuerto.Edit', compact('aeropuertos'));
     }
 
     // Mostrar confirmación para eliminar aeropuerto
     public function delete(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.Delete', compact('aeropuerto'));
+        return view('Aeropuerto.Delete', compact('aeropuertos'));
     }
 
     // Guardar un nuevo aeropuerto desde el modal
@@ -58,7 +66,7 @@ class AeropuertoController extends Controller
         Aeropuerto::create($data);
 
         // Redirige a la misma página de Listar usando la ruta con nombre
-        return redirect()->route('aeropuerto.listar')
+        return redirect()->route('aeropuertos.listar')
                          ->with('success', 'Aeropuerto creado correctamente');
     }
 
@@ -74,16 +82,16 @@ class AeropuertoController extends Controller
 
         $aeropuerto->update($request->except('IdAeropuerto'));
 
-        return redirect()->route('aeropuerto.listar')
+        return redirect()->route('aeropuertos.listar')
                          ->with('success', 'Aeropuerto actualizado correctamente');
     }
 
     // Eliminar un aeropuerto
-    public function destroy(Aeropuerto $aeropuerto)
+    public function destroy(Aeropuertos $aeropuerto)
     {
         $aeropuerto->delete();
 
-        return redirect()->route('aeropuerto.listar')
+        return redirect()->route('aeropuertos.listar')
                          ->with('success', 'Aeropuerto eliminado correctamente');
     }
 

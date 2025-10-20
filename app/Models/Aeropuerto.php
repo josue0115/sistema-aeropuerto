@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Aeropuerto extends Model
 {
-    protected $table = 'aeropuerto';
+    protected $table = 'aeropuertos';
     protected $primaryKey = 'IdAeropuerto';
     public $incrementing = false;
     protected $keyType = 'string';
@@ -18,4 +18,9 @@ class Aeropuerto extends Model
         'Ciudad',
         'Estado'
     ];
+
+    public static function listar()
+    {
+        return self::all();
+    }
 }

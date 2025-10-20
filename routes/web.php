@@ -1,6 +1,13 @@
 <?php
 
-use App\Http\Controllers\AeropuertoController;
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\HistorialVueloController;
+use App\Http\Controllers\ServicioController;
+use App\Http\Controllers\FacturaController;
+use App\Http\Controllers\ReservaController;
+use App\Http\Controllers\EquipajeController;
+use App\Http\Controllers\BoletoController;
+use App\Http\Controllers\PasajeroController;
 use App\Http\Controllers\AerolineaController;
 use App\Http\Controllers\AvionController;
 use App\Http\Controllers\PersonalController;
@@ -8,11 +15,16 @@ use App\Http\Controllers\MantenimientoController;
 use App\Http\Controllers\VueloController;
 use App\Http\Controllers\HorarioController;
 use App\Http\Controllers\EscalaController;
-use Illuminate\Support\Facades\Route;
+//use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AsientoController;
+use App\Http\Controllers\TipoServicioController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\AeropuertoController;
 
-
+Route::get('/', [HomeController::class, 'index'])->name('home');
 // Mostrar lista de aeropuertos
 Route::get('aeropuerto/Listar', [AeropuertoController::class, 'Listar'])->name('aeropuerto.listar');
+Route::get('/aeropuertos', [AeropuertoController::class, 'Listar'])->name('aeropuertos.index');
 // Mostrar formulario para crear
 Route::get('aeropuerto/create', [AeropuertoController::class, 'create'])->name('aeropuerto.create');
 // Mostrar detalles
@@ -31,6 +43,7 @@ Route::delete('/aeropuerto/destroy/{aeropuerto}', [AeropuertoController::class, 
 
 // Rutas para Aerolinea
 Route::get('/aerolinea/Listar', [AerolineaController::class, 'Listar'])->name('aerolinea.Listar');
+Route::get('/aerolineas', [AerolineaController::class, 'Listar'])->name('aerolineas.index');
 // Mostrar formulario para crear
 Route::get('aerolinea/create', [AerolineaController::class, 'create'])->name('aerolinea.create');
 // Mostrar detalles
@@ -42,6 +55,7 @@ Route::get('aerolinea/{aerolinea}/delete', [AerolineaController::class, 'delete'
 Route::post('/aerolinea/store', [AerolineaController::class, 'store'])->name('aerolinea.store');
 Route::put('/aerolinea/update/{aerolinea}', [AerolineaController::class, 'update'])->name('aerolinea.update');
 Route::delete('/aerolinea/destroy/{aerolinea}', [AerolineaController::class, 'destroy'])->name('aerolinea.destroy');
+Route::resource('historial_vuelos', HistorialVueloController::class);
 
 
 // Rutas para Avion
@@ -59,7 +73,7 @@ Route::get('avion/{avion}/delete', [AvionController::class, 'delete'])->name('av
 Route::post('/avion/store', [AvionController::class, 'store'])->name('avion.store');
 Route::put('/avion/update/{avion}', [AvionController::class, 'update'])->name('avion.update');
 Route::delete('/avion/destroy/{avion}', [AvionController::class, 'destroy'])->name('avion.destroy');
-
+Route::resource('servicios', ServicioController::class);
 
 // Rutas para Personal
 // Listar personal
@@ -72,12 +86,15 @@ Route::get('/personal/{personal}', [PersonalController::class, 'show'])->name('p
 Route::get('/personal/{personal}/edit', [PersonalController::class, 'edit'])->name('personal.edit');
 // Mostrar confirmación de eliminación
 Route::get('/personal/{personal}/delete', [PersonalController::class, 'delete'])->name('personal.delete');
-
+// Rutas para Facturas
+Route::resource('facturas', FacturaController::class);
 // Guardar, actualizar y eliminar
 Route::post('/personal/store', [PersonalController::class, 'store'])->name('personal.store');
 Route::put('/personal/update/{personal}', [PersonalController::class, 'update'])->name('personal.update');
 Route::delete('/personal/destroy/{personal}', [PersonalController::class, 'destroy'])->name('personal.destroy');
-
+// Rutas para Reservas
+Route::resource('reservas', ReservaController::class);
+Route::resource('equipajes', EquipajeController::class);
 // Rutas para Mantenimiento
 // Listar mantenimientos
 Route::get('/mantenimiento/Listar', [MantenimientoController::class, 'Listar'])->name('mantenimiento.listar');
@@ -97,10 +114,19 @@ Route::delete('/mantenimiento/destroy/{mantenimiento}', [MantenimientoController
 // Rutas para Vuelo
 // Listar vuelos
 Route::get('/vuelo', [VueloController::class, 'index'])->name('vuelo.index');
+Route::get('/vuelos', [VueloController::class, 'index'])->name('vuelos.index');
 // Mostrar formulario para crear
 Route::get('/vuelo/create', [VueloController::class, 'create'])->name('vuelo.create');
+Route::get('/vuelos/create', [VueloController::class, 'create'])->name('vuelos.create');
 // Mostrar detalles
 Route::get('/vuelo/{vuelo}', [VueloController::class, 'show'])->name('vuelo.show');
+Route::resource('boletos', BoletoController::class);
+Route::get('boletos/{boleto}/pdf', [BoletoController::class, 'generatePdf'])->name('boletos.pdf');
+// Rutas para Pasajeros
+Route::resource('pasajeros', PasajeroController::class);
+
+
+
 // Mostrar formulario para editar
 Route::get('/vuelo/{vuelo}/edit', [VueloController::class, 'edit'])->name('vuelo.edit');
 // Mostrar confirmación para eliminar
@@ -141,7 +167,9 @@ Route::get('/escala/{escala}/delete', [EscalaController::class, 'delete'])->name
 Route::post('/escala', [EscalaController::class, 'store'])->name('escala.store');
 Route::put('/escala/{escala}', [EscalaController::class, 'update'])->name('escala.update');
 Route::delete('/escala/{escala}', [EscalaController::class, 'destroy'])->name('escala.destroy');
-
+// Rutas para Asientos
+Route::get('/asientos/available-seats', [AsientoController::class, 'getAvailableSeats'])->name('asientos.available-seats');
+Route::resource('asientos', AsientoController::class);
 // Rutas para Horario
 // Listar horarios
 Route::get('/horario/Listar', [HorarioController::class, 'Listar'])->name('horario.listar');
@@ -157,7 +185,8 @@ Route::get('/horario/{horario}/delete', [HorarioController::class, 'delete'])->n
 Route::post('/horario', [HorarioController::class, 'store'])->name('horario.store');
 Route::put('/horario/{horario}', [HorarioController::class, 'update'])->name('horario.update');
 Route::delete('/horario/{horario}', [HorarioController::class, 'destroy'])->name('horario.destroy');
-
+Route::resource('tipo_servicios', TipoServicioController::class);
+Route::resource('asientos', AsientoController::class);
 // Rutas para Horario
 // Listar horarios
 Route::get('/horario', [HorarioController::class, 'index'])->name('horario.index');

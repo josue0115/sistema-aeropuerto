@@ -1,0 +1,149 @@
+/* Airline Seat Selection Styles */
+.airplane-container {
+    display: flex;
+    justify-content: center;
+    margin: 20px 0;
+}
+
+.airplane {
+    background: #f8f9fa;
+    border: 2px solid #dee2e6;
+    border-radius: 10px;
+    padding: 20px;
+    max-width: 600px;
+    width: 100%;
+}
+
+.cockpit {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.cockpit-window {
+    width: 60px;
+    height: 40px;
+    background: linear-gradient(45deg, #87ceeb, #4682b4);
+    border-radius: 50% 50% 20px 20px;
+    margin: 0 auto;
+    border: 2px solid #333;
+    position: relative;
+}
+
+.cockpit-window::before {
+    content: '';
+    position: absolute;
+    top: 5px;
+    left: 5px;
+    right: 5px;
+    bottom: 5px;
+    background: #87ceeb;
+    border-radius: 50% 50% 15px 15px;
+}
+
+.first-class, .business-class, .economy-class {
+    margin-bottom: 20px;
+}
+
+.first-class h6, .business-class h6, .economy-class h6 {
+    text-align: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    color: #495057;
+}
+
+.seats-row {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-bottom: 10px;
+}
+
+.seat-group {
+    display: flex;
+    gap: 5px;
+}
+
+.seat {
+    width: 35px;
+    height: 35px;
+    border-radius: 5px 5px 15px 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 12px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 1px solid #dee2e6;
+}
+
+.seat.available {
+    background: #28a745;
+    color: white;
+}
+
+.seat.available:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+
+.seat.selected {
+    background: #007bff;
+    color: white;
+    box-shadow: 0 0 10px rgba(0, 123, 255, 0.5);
+}
+
+.seat.occupied {
+    background: #dc3545;
+    color: white;
+    cursor: not-allowed;
+}
+
+.aisle {
+    width: 20px;
+    height: 35px;
+    background: #e9ecef;
+    margin: 0 10px;
+    border-radius: 2px;
+}
+
+.seat-legend {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border-radius: 3px 3px 8px 8px;
+    margin-right: 5px;
+    vertical-align: middle;
+}
+
+.available-legend {
+    background: #28a745;
+}
+
+.selected-legend {
+    background: #007bff;
+}
+
+.occupied-legend {
+    background: #dc3545;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .airplane {
+        padding: 15px;
+        max-width: 100%;
+    }
+
+    .seat {
+        width: 30px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .aisle {
+        width: 15px;
+        height: 30px;
+        margin: 0 5px;
+    }
+}
