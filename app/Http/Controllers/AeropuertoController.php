@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Aeropuertos;
+use App\Models\Aeropuerto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -12,7 +12,7 @@ class AeropuertoController extends Controller
     public function index()
     {
         $aeropuertos = Aeropuerto::listar();
-        return view('aeropuertos.index', compact('aeropuertos'));
+        return view('aeropuerto.index', compact('aeropuerto'));
     }
 
     // Mostrar la lista de aeropuertos
@@ -20,7 +20,7 @@ class AeropuertoController extends Controller
     {
         $aeropuertos = Aeropuerto::all();
         // La vista está en resources/views/Aeropuerto/Listar.blade.php
-        return view('Aeropuertos.Listar', compact('aeropuertos'));
+        return view('Aeropuerto.Listar', compact('aeropuerto'));
     }
 
     // Mostrar formulario para crear aeropuerto
@@ -87,7 +87,7 @@ class AeropuertoController extends Controller
     }
 
     // Eliminar un aeropuerto
-    public function destroy(Aeropuertos $aeropuerto)
+    public function destroy(Aeropuerto $aeropuerto)
     {
         $aeropuerto->delete();
 

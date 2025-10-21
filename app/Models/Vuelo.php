@@ -8,15 +8,15 @@ use App\Models\Avion;
 
 class Vuelo extends Model
 {
-    protected $table = 'vuelos';
-    protected $primaryKey = 'idVuelo';
+    protected $table = 'vuelo';
+    protected $primaryKey = 'IdVuelo';
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
         'IdAvion',
-        'idAeropuertoOrigen',
-        'idAeropuertoDestino',
+        'AeropuertoOrigen',
+        'AeropuertoDestino',
         'FechaSalida',
         'FechaLlegada',
         'Precio',
@@ -32,13 +32,13 @@ class Vuelo extends Model
     // Relación con Aeropuerto Origen
     public function aeropuertoOrigen()
     {
-        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoOrigen', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'AeropuertoOrigen', 'IdAeropuerto');
     }
 
     // Relación con Aeropuerto Destino
     public function aeropuertoDestino()
     {
-        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoDestino', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'AeropuertoDestino', 'IdAeropuerto');
     }
 
     public static function listar()

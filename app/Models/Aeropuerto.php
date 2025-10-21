@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Aeropuerto extends Model
 {
-    protected $table = 'aeropuertos';
+    protected $table = 'aeropuerto';
     protected $primaryKey = 'IdAeropuerto';
     public $incrementing = false;
     protected $keyType = 'string';

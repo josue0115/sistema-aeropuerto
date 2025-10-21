@@ -29,4 +29,9 @@ class Avion extends Model
     {
         return $this->belongsTo(Aerolinea::class, 'IdAerolinea', 'IdAerolinea');
     }
+
+    public static function listar()
+    {
+        return self::with('aerolinea')->get();
+    }
 }
