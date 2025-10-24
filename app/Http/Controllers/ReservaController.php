@@ -33,13 +33,31 @@ class ReservaController extends Controller
                    a_origen.Nombre as origen, a_destino.Nombre as destino
             FROM reservas r
             JOIN pasajeros p ON r.idPasajero = p.idPasajero
-            JOIN vuelos v ON r.idVuelo = v.idVuelo
+            JOIN vuelo v ON r.idVuelo = v.idVuelo
             LEFT JOIN aeropuertos a_origen ON v.idAeropuertoOrigen = a_origen.idAeropuerto
             LEFT JOIN aeropuertos a_destino ON v.idAeropuertoDestino = a_destino.idAeropuerto
             ORDER BY r.FechaReserva DESC
         ');
 
-        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes'));
+        // Calcular total acumulado de la reserva actual (si existe en sesión)
+        $totalAcumulado = session('total_acumulado', 0);
+
+        // No sumar el precio del vuelo aquí porque ya está incluido en el boleto
+
+        // Obtener valores de sesión para pre-llenar campos
+        $pasajeroSeleccionado = session('pasajero_seleccionado');
+
+        // Si no hay pasajero seleccionado, usar el primer pasajero creado
+        if (!$pasajeroSeleccionado) {
+            $pasajerosCreados = session('pasajeros_creados', []);
+            if (!empty($pasajerosCreados)) {
+                $pasajeroSeleccionado = $pasajerosCreados[0];
+            }
+        }
+
+        $vueloSeleccionado = session('vuelo_seleccionado');
+
+        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes', 'totalAcumulado', 'pasajeroSeleccionado', 'vueloSeleccionado'));
     }
 
     /**
@@ -49,7 +67,7 @@ class ReservaController extends Controller
     {
         $request->validate([
             'idPasajero' => 'required|integer|exists:pasajeros,idPasajero',
-            'idVuelo' => 'required|integer|exists:vuelos,idVuelo',
+            'idVuelo' => 'required|integer|exists:vuelo,idVuelo',
             'FechaReserva' => 'required|date|after_or_equal:today',
             'FechaVuelo' => 'required|date|after_or_equal:today',
             'Estado' => 'required|string|max:10',
@@ -67,6 +85,18 @@ class ReservaController extends Controller
         $data['idReserva'] = DB::select('SELECT COALESCE(MAX(idReserva), 0) + 1 as next_id FROM reservas')[0]->next_id;
 
         Reserva::insertar($data);
+
+        // Verificar si se presionó el botón "Crear y Pagar"
+        if ($request->input('action') === 'pay') {
+            // Guardar ID de reserva en sesión para el pago
+            session(['reserva_creada' => $data['idReserva']]);
+
+            // Redirigir a pago
+            return redirect()->route('pagos.create')->with('success', 'Reserva creada exitosamente. Ahora procesa el pago.');
+        }
+
+        // Limpiar la sesión después de crear la reserva
+        session()->forget(['total_acumulado', 'vuelo_seleccionado', 'boleto_creado', 'vuelo_para_asientos', 'pasajeros_creados']);
 
         return redirect()->route('reservas.index')->with('success', 'Reserva creada exitosamente.');
     }
@@ -103,7 +133,7 @@ class ReservaController extends Controller
                    a_origen.Nombre as origen, a_destino.Nombre as destino
             FROM reservas r
             JOIN pasajeros p ON r.idPasajero = p.idPasajero
-            JOIN vuelos v ON r.idVuelo = v.idVuelo
+            JOIN vuelo v ON r.idVuelo = v.idVuelo
             LEFT JOIN aeropuertos a_origen ON v.idAeropuertoOrigen = a_origen.idAeropuerto
             LEFT JOIN aeropuertos a_destino ON v.idAeropuertoDestino = a_destino.idAeropuerto
             ORDER BY r.FechaReserva DESC
@@ -119,7 +149,7 @@ class ReservaController extends Controller
     {
         $request->validate([
             'idPasajero' => 'required|integer|exists:pasajeros,idPasajero',
-            'idVuelo' => 'required|integer|exists:vuelos,idVuelo',
+            'idVuelo' => 'required|integer|exists:vuelo,idVuelo',
             'FechaReserva' => 'required|date|after_or_equal:today',
             'FechaVuelo' => 'required|date|after_or_equal:today',
             'Estado' => 'required|string|max:10',
@@ -139,6 +169,19 @@ class ReservaController extends Controller
     }
 
     /**
+     * Redirigir a pago después de crear reserva
+     */
+    public function procesarPago()
+    {
+        // Verificar que existe una reserva creada
+        if (!session()->has('reserva_creada')) {
+            return redirect()->route('reservas.create')->with('error', 'No se encontró una reserva para procesar el pago.');
+        }
+
+        return redirect()->route('pagos.create');
+    }
+
+    /**
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
@@ -146,5 +189,35 @@ class ReservaController extends Controller
         Reserva::eliminar($id);
 
         return redirect()->route('reservas.index')->with('success', 'Reserva eliminada exitosamente.');
+    }
+
+    /**
+     * Store a newly created resource and redirect to payment.
+     */
+    public function storeAndPay(Request $request)
+    {
+        $request->validate([
+            'idPasajero' => 'required|integer|exists:pasajeros,idPasajero',
+            'idVuelo' => 'required|integer|exists:vuelo,idVuelo',
+            'FechaReserva' => 'required|date|after_or_equal:today',
+            'FechaVuelo' => 'required|date|after_or_equal:today',
+            'Estado' => 'required|string|max:10',
+        ]);
+
+        $data = $request->all();
+
+        // Calcular monto anticipado (10% del precio del vuelo)
+        $vuelo = Vuelo::obtenerPorId($data['idVuelo']);
+        if ($vuelo) {
+            $data['MontoAnticipado'] = $vuelo->Precio * 0.10;
+        }
+
+        $reservaId = Reserva::insertar($data);
+
+        // Guardar ID de reserva en sesión para el pago
+        session(['reserva_creada' => $reservaId]);
+
+        // Redirigir a pago
+        return redirect()->route('pagos.create')->with('success', 'Reserva creada exitosamente. Ahora procesa el pago.');
     }
 }

@@ -37,9 +37,9 @@
                 <td>{{ $aero->Ciudad }}</td>
                 <td>{{ $aero->Estado }}</td>
                 <td>
-                    <a href="{{ route('aeropuerto.show', $aero->IdAeropuerto) }}" class="btn btn-info btn-sm">Ver</a>
-                    <a href="{{ route('aeropuerto.edit', $aero->IdAeropuerto) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ route('aeropuerto.delete', $aero->IdAeropuerto) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    <a href="{{ route('aeropuerto.show', $aero) }}" class="btn btn-info btn-sm">Ver</a>
+                    <a href="{{ route('aeropuerto.edit', $aero) }}" class="btn btn-warning btn-sm">Editar</a>
+                    <a href="{{ route('aeropuerto.delete', $aero) }}" class="btn btn-danger btn-sm">Eliminar</a>
                 </td>
             </tr>
             @endforeach

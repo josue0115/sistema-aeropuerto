@@ -32,14 +32,17 @@ class Pasajero extends Model
 
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Pasajero(?, ?, ?, ?, ?, ?)', [
-            null, // idPasajero auto-increment
-            $data['Nombre'],
-            $data['Apellido'],
-            $data['Pais'],
-            $data['TipoPasajero'],
-            $data['Estado']
+        // Usar INSERT directo en lugar del stored procedure para obtener el ID correcto
+        $id = DB::table('pasajeros')->insertGetId([
+            'Nombre' => $data['Nombre'],
+            'Apellido' => $data['Apellido'],
+            'Pais' => $data['Pais'],
+            'TipoPasajero' => $data['TipoPasajero'],
+            'Estado' => $data['Estado']
         ]);
+
+        \Log::info('ID del pasajero insertado:', ['id' => $id]);
+        return $id;
     }
 
     public static function actualizar($id, $data)

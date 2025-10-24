@@ -8,13 +8,14 @@ use App\Models\Avion;
 
 class Vuelo extends Model
 {
-    protected $table = 'vuelos';
+    protected $table = 'vuelo';
     protected $primaryKey = 'idVuelo';
     public $incrementing = true;
     protected $keyType = 'int';
 
     protected $fillable = [
-        'IdAvion',
+        'idVuelo',
+        'idAvion',
         'idAeropuertoOrigen',
         'idAeropuertoDestino',
         'FechaSalida',
@@ -26,24 +27,35 @@ class Vuelo extends Model
     // Relación con Avion
     public function avion()
     {
-        return $this->belongsTo(Avion::class, 'IdAvion', 'IdAvion');
+        return $this->belongsTo(Avion::class, 'idAvion', 'idAvion');
     }
 
     // Relación con Aeropuerto Origen
     public function aeropuertoOrigen()
     {
-        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoOrigen', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoOrigen', 'idAeropuerto');
     }
 
     // Relación con Aeropuerto Destino
     public function aeropuertoDestino()
     {
-        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoDestino', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'idAeropuertoDestino', 'idAeropuerto');
     }
 
     public static function listar()
     {
-        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')->get();
+        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')
+            ->select('vuelo.*')
+            ->selectRaw('aeropuerto_origen.Nombre as aeropuerto_origen_nombre')
+            ->selectRaw('aeropuerto_destino.Nombre as aeropuerto_destino_nombre')
+            ->leftJoin('aeropuerto as aeropuerto_origen', 'vuelo.idAeropuertoOrigen', '=', 'aeropuerto_origen.idAeropuerto')
+            ->leftJoin('aeropuerto as aeropuerto_destino', 'vuelo.idAeropuertoDestino', '=', 'aeropuerto_destino.idAeropuerto')
+            ->get()
+            ->map(function ($vuelo) {
+                $vuelo->aeropuerto_origen_nombre = $vuelo->aeropuerto_origen_nombre ?? $vuelo->aeropuertoOrigen->Nombre ?? 'N/A';
+                $vuelo->aeropuerto_destino_nombre = $vuelo->aeropuerto_destino_nombre ?? $vuelo->aeropuertoDestino->Nombre ?? 'N/A';
+                return $vuelo;
+            });
     }
 
     public static function obtenerPorId($id)

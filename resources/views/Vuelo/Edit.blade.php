@@ -28,25 +28,25 @@
                     <select name="IdAvion" class="form-select" required>
                         <option value="">Seleccione</option>
                         @foreach($aviones as $avion)
-                        <option value="{{ $avion->IdAvion }}" {{ $vuelo->IdAvion == $avion->IdAvion ? 'selected' : '' }}>{{ $avion->IdAvion }} - {{ $avion->Placa }}</option>
+                        <option value="{{ $avion->IdAvion }}" {{ $vuelo->idAvion == $avion->IdAvion ? 'selected' : '' }}>{{ $avion->Modelo }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
                     <label>Aeropuerto Origen</label>
-                    <select name="AeropuertoOrigen" class="form-select" required>
+                    <select name="idAeropuertoOrigen" class="form-select" required>
                         <option value="">Seleccione</option>
                         @foreach($aeropuertos as $aeropuerto)
-                        <option value="{{ $aeropuerto->IdAeropuerto }}" {{ $vuelo->AeropuertoOrigen == $aeropuerto->IdAeropuerto ? 'selected' : '' }}>{{ $aeropuerto->IdAeropuerto }} - {{ $aeropuerto->NombreAeropuerto }}</option>
+                        <option value="{{ $aeropuerto->IdAeropuerto }}" {{ $vuelo->idAeropuertoOrigen == $aeropuerto->IdAeropuerto ? 'selected' : '' }}>{{ $aeropuerto->NombreAeropuerto }}</option>
                         @endforeach
                     </select>
                 </div>
                 <div class="mb-3">
                     <label>Aeropuerto Destino</label>
-                    <select name="AeropuertoDestino" class="form-select" required>
+                    <select name="idAeropuertoDestino" class="form-select" required>
                         <option value="">Seleccione</option>
                         @foreach($aeropuertos as $aeropuerto)
-                        <option value="{{ $aeropuerto->IdAeropuerto }}" {{ $vuelo->AeropuertoDestino == $aeropuerto->IdAeropuerto ? 'selected' : '' }}>{{ $aeropuerto->IdAeropuerto }} - {{ $aeropuerto->NombreAeropuerto }}</option>
+                        <option value="{{ $aeropuerto->IdAeropuerto }}" {{ $vuelo->idAeropuertoDestino == $aeropuerto->IdAeropuerto ? 'selected' : '' }}>{{ $aeropuerto->NombreAeropuerto }}</option>
                         @endforeach
                     </select>
                 </div>

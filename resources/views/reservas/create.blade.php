@@ -1,6 +1,12 @@
 @extends('layouts.app')
 
 @section('content')
+@if(session()->has('total_acumulado'))
+    <!-- <div class="absolute top-3 right-3 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg z-10">
+        <div class="text-sm font-medium">Total Reserva</div>
+        <div class="text-lg font-bold">${{ number_format(session('total_acumulado'), 2) }}</div>
+    </div> -->
+@endif
 <div class="container">
     <div class="row">
         <div class="col-md-12">
@@ -18,12 +24,12 @@
                         <input type="hidden" id="idReserva" name="idReserva" value="">
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="idPasajero" class="form-label">Código Pasajero</label>
                                 <select class="form-control @error('idPasajero') is-invalid @enderror" id="idPasajero" name="idPasajero" required>
                                     <option value="">Seleccione un pasajero</option>
                                     @foreach($pasajeros as $pasajero)
-                                        <option value="{{ $pasajero->idPasajero }}" {{ old('idPasajero') == $pasajero->idPasajero ? 'selected' : '' }}>
+                                        <option value="{{ $pasajero->idPasajero }}" {{ old('idPasajero', $pasajeroSeleccionado ?? '') == $pasajero->idPasajero ? 'selected' : '' }}>
                                             {{ $pasajero->idPasajero }} - {{ $pasajero->Nombre }} {{ $pasajero->Apellido }}
                                         </option>
                                     @endforeach
@@ -31,14 +37,17 @@
                                 @error('idPasajero')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                @if($pasajeroSeleccionado ?? false)
+                                    <small class="text-muted">Pasajero preseleccionado de la sesión</small>
+                                @endif
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="idVuelo" class="form-label">Código Vuelo</label>
                                 <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
                                     <option value="">Seleccione un vuelo</option>
                                     @foreach($vuelos as $vuelo)
-                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" data-fecha-salida="{{ $vuelo->FechaSalida }}" {{ old('idVuelo') == $vuelo->idVuelo ? 'selected' : '' }}>
+                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" data-fecha-salida="{{ $vuelo->FechaSalida }}" {{ old('idVuelo', $vueloSeleccionado ?? '') == $vuelo->idVuelo ? 'selected' : '' }}>
                                             {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuerto_origen_nombre ?? 'N/A' }} a {{ $vuelo->aeropuerto_destino_nombre ?? 'N/A' }}
                                         </option>
                                     @endforeach
@@ -46,6 +55,9 @@
                                 @error('idVuelo')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                @if($vueloSeleccionado ?? false)
+                                    <small class="text-muted">Vuelo preseleccionado de la sesión</small>
+                                @endif
                             </div>
                         </div>
 
@@ -64,7 +76,7 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="FechaReserva" class="form-label">Fecha Reserva</label>
                                 <input type="datetime-local" class="form-control @error('FechaReserva') is-invalid @enderror" id="FechaReserva" name="FechaReserva" value="{{ old('FechaReserva', date('Y-m-d\TH:i')) }}" min="{{ date('Y-m-d\TH:i') }}" required>
                                 @error('FechaReserva')
@@ -72,7 +84,7 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="FechaVuelo" class="form-label">Fecha Vuelo</label>
                                 <input type="datetime-local" class="form-control @error('FechaVuelo') is-invalid @enderror" id="FechaVuelo" name="FechaVuelo" value="{{ old('FechaVuelo') }}" min="{{ date('Y-m-d\TH:i') }}" required>
                                 @error('FechaVuelo')
@@ -82,20 +94,20 @@
                         </div>
 
                         <div class="row">
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="MontoAnticipado" class="form-label">Monto Anticipado</label>
                                 <input type="number" step="0.01" class="form-control" id="MontoAnticipado" name="MontoAnticipado" value="{{ old('MontoAnticipado') }}" readonly>
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <div class="col-12 col-md-6 mb-3">
                                 <label for="Estado" class="form-label">Estado</label>
                                 <select class="form-control @error('Estado') is-invalid @enderror" id="Estado" name="Estado" required>
                                     <option value="">Seleccione un estado</option>
-                                    <option value="Activo" {{ old('Estado', 'Confirmado') == 'Activo' ? 'selected' : '' }}>Activo</option>
-                                    <option value="Inactivo" {{ old('Estado', 'Confirmado') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
-                                    <option value="Pendiente" {{ old('Estado', 'Confirmado') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
-                                    <option value="Confirmado" {{ old('Estado', 'Confirmado') == 'Confirmado' ? 'selected' : '' }}>Confirmado</option>
-                                    <option value="Cancelado" {{ old('Estado', 'Confirmado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+                                    <option value="Activo" {{ old('Estado', 'Confirmada') == 'Activo' ? 'selected' : '' }}>Activo</option>
+                                    <option value="Inactivo" {{ old('Estado', 'Confirmada') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                                    <option value="Pendiente" {{ old('Estado', 'Confirmada') == 'Pendiente' ? 'selected' : '' }}>Pendiente</option>
+                                    <option value="Confirmada" {{ old('Estado', 'Confirmada') == 'Confirmada' ? 'selected' : '' }}>Confirmada</option>
+                                    <option value="Cancelado" {{ old('Estado', 'Confirmada') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                                 </select>
                                 @error('Estado')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -103,8 +115,22 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Crear Reserva</button>
-                        <a href="{{ route('reservas.index') }}" class="btn btn-secondary">Cancelar</a>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" name="action" value="create" class="btn btn-primary me-md-2">
+                                <i class="fas fa-save me-2"></i>
+                                Crear Reserva
+                            </button>
+                            <button type="submit" name="action" value="pay" class="btn btn-success me-md-2">
+                                <i class="fas fa-credit-card me-2"></i>
+                                Crear y Pagar
+                            </button>
+                            <!-- <a href="{{ route('pagos.create') }}" class="btn btn-info me-md-2">
+                                <i class="fas fa-money-bill-wave me-2"></i>
+                                Ir a Pago
+                            </a>
+                            <a href="{{ route('reservas.index') }}" class="btn btn-secondary">Cancelar</a>
+                             -->
+                        </div>
                     </form>
                 </div>
             </div>

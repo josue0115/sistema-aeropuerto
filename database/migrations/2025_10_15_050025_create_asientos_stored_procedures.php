@@ -17,13 +17,13 @@ return new class extends Migration
                 IF p_idAsiento IS NULL THEN
                     SELECT a.*, v.idVuelo as vuelo_id, CONCAT(\'Vuelo \', v.idVuelo, \' - \', ao.Nombre, \' a \', ad.Nombre) as vuelo_info
                     FROM asientos a
-                    LEFT JOIN vuelos v ON a.idVuelo = v.idVuelo
+                    LEFT JOIN vuelo v ON a.idVuelo = v.idVuelo
                     LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
                     LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto;
                 ELSE
                     SELECT a.*, v.idVuelo as vuelo_id, CONCAT(\'Vuelo \', v.idVuelo, \' - \', ao.Nombre, \' a \', ad.Nombre) as vuelo_info
                     FROM asientos a
-                    LEFT JOIN vuelos v ON a.idVuelo = v.idVuelo
+                    LEFT JOIN vuelo v ON a.idVuelo = v.idVuelo
                     LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
                     LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
                     WHERE a.idAsiento = p_idAsiento;

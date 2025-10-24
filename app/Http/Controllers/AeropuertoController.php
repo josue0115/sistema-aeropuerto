@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Aeropuertos;
+use App\Models\Aeropuerto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 
@@ -20,7 +20,7 @@ class AeropuertoController extends Controller
     {
         $aeropuertos = Aeropuerto::all();
         // La vista está en resources/views/Aeropuerto/Listar.blade.php
-        return view('Aeropuertos.Listar', compact('aeropuertos'));
+        return view('Aeropuerto.Listar', compact('aeropuertos'));
     }
 
     // Mostrar formulario para crear aeropuerto
@@ -32,19 +32,19 @@ class AeropuertoController extends Controller
     // Mostrar detalles de un aeropuerto
     public function show(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.show', compact('aeropuertos'));
+        return view('Aeropuerto.show', compact('aeropuerto'));
     }
 
     // Mostrar formulario para editar aeropuerto
     public function edit(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.Edit', compact('aeropuertos'));
+        return view('Aeropuerto.Edit', compact('aeropuerto'));
     }
 
     // Mostrar confirmación para eliminar aeropuerto
     public function delete(Aeropuerto $aeropuerto)
     {
-        return view('Aeropuerto.Delete', compact('aeropuertos'));
+        return view('Aeropuerto.Delete', compact('aeropuerto'));
     }
 
     // Guardar un nuevo aeropuerto desde el modal
@@ -87,11 +87,11 @@ class AeropuertoController extends Controller
     }
 
     // Eliminar un aeropuerto
-    public function destroy(Aeropuertos $aeropuerto)
+    public function destroy(Aeropuerto $aeropuerto)
     {
         $aeropuerto->delete();
 
-        return redirect()->route('aeropuertos.listar')
+        return redirect()->route('aeropuerto.listar')
                          ->with('success', 'Aeropuerto eliminado correctamente');
     }
 

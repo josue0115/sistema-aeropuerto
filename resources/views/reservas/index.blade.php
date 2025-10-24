@@ -17,46 +17,50 @@
                         </div>
                     @endif
 
-                    <table class="table table-bordered">
-                        <thead>
-                            <tr>
-                                <th>ID Reserva</th>
-                                <th>ID Pasajero</th>
-                                <th>ID Vuelo</th>
-                                <th>Fecha Reserva</th>
-                                <th>Fecha Vuelo</th>
-                                <th>Monto Anticipado</th>
-                                <th>Estado</th>
-                                <th>Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($reservas as $reserva)
+                    <div class="table-responsive">
+                        <table class="table table-bordered">
+                            <thead>
                                 <tr>
-                                    <td>{{ $reserva->idReserva }}</td>
-                                    <td>{{ $reserva->idPasajero }}</td>
-                                    <td>{{ $reserva->idVuelo }}</td>
-                                    <td>{{ $reserva->FechaReserva }}</td>
-                                    <td>{{ $reserva->FechaVuelo }}</td>
-                                    <td>{{ $reserva->MontoAnticipado }}</td>
-                                    <td>{{ $reserva->Estado }}</td>
-                                    <td>
-                                        <a href="{{ route('reservas.show', $reserva->idReserva) }}" class="btn btn-info btn-sm">Ver</a>
-                                        <a href="{{ route('reservas.edit', $reserva->idReserva) }}" class="btn btn-warning btn-sm">Editar</a>
-                                        <form action="{{ route('reservas.destroy', $reserva->idReserva) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
-                                        </form>
-                                    </td>
+                                    <th>ID Reserva</th>
+                                    <th>ID Pasajero</th>
+                                    <th>ID Vuelo</th>
+                                    <th>Fecha Reserva</th>
+                                    <th>Fecha Vuelo</th>
+                                    <th>Monto Anticipado</th>
+                                    <th>Estado</th>
+                                    <th>Acciones</th>
                                 </tr>
-                            @empty
-                                <tr>
-                                    <td colspan="8" class="text-center">No hay reservas registradas.</td>
-                                </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
+                            </thead>
+                            <tbody>
+                                @forelse($reservas as $reserva)
+                                    <tr>
+                                        <td>{{ $reserva->idReserva }}</td>
+                                        <td>{{ $reserva->idPasajero }}</td>
+                                        <td>{{ $reserva->idVuelo }}</td>
+                                        <td>{{ $reserva->FechaReserva }}</td>
+                                        <td>{{ $reserva->FechaVuelo }}</td>
+                                        <td>{{ $reserva->MontoAnticipado }}</td>
+                                        <td>{{ $reserva->Estado }}</td>
+                                        <td>
+                                            <div class="btn-group-vertical btn-group-sm d-block d-md-inline-block" role="group">
+                                                <a href="{{ route('reservas.show', $reserva->idReserva) }}" class="btn btn-info btn-sm">Ver</a>
+                                                <a href="{{ route('reservas.edit', $reserva->idReserva) }}" class="btn btn-warning btn-sm">Editar</a>
+                                                <form action="{{ route('reservas.destroy', $reserva->idReserva) }}" method="POST" style="display: inline;">
+                                                    @csrf
+                                                    @method('DELETE')
+                                                    <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
+                                                </form>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                @empty
+                                    <tr>
+                                        <td colspan="8" class="text-center">No hay reservas registradas.</td>
+                                    </tr>
+                                @endforelse
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
         </div>

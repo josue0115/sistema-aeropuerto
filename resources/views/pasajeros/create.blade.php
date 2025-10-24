@@ -8,6 +8,13 @@
                 <div class="card-header">
                     <h4>Crear Pasajeros</h4>
                     <p id="cantidad-display">Cantidad de personas: Cargando...</p>
+                    @if(isset($vueloSeleccionado))
+                        <div class="alert alert-info mt-2">
+                            <strong>Vuelo Seleccionado:</strong> {{ $vueloSeleccionado->idVuelo }} -
+                            {{ $vueloSeleccionado->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vueloSeleccionado->aeropuertoDestino->Nombre ?? 'N/A' }}
+                            ({{ $vueloSeleccionado->FechaSalida }})
+                        </div>
+                    @endif
                 </div>
                 <div class="card-body">
                     <form action="{{ route('pasajeros.store') }}" method="POST" id="pasajeros-form">
@@ -16,7 +23,8 @@
                             <!-- Los formularios de pasajeros se generarán aquí dinámicamente -->
                             <input type="hidden" name="pasajeros[0][idPasajero]" value="{{ old('pasajeros.0.idPasajero', 1) }}">
                         </div>
-                        <button type="submit" class="btn btn-primary">Crear Pasajeros</button>
+                        <button type="submit" class="btn btn-primary" name="action" value="save">Crear Pasajeros</button>
+                        <button type="submit" class="btn btn-success" name="action" value="continue_to_boletos">Guardar y Continuar a Boletos</button>
                         <a href="{{ route('pasajeros.index') }}" class="btn btn-secondary">Cancelar</a>
                     </form>
                 </div>
@@ -25,14 +33,19 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="container mt-4">
+    <!-- <div class="container-fluid mt-4">
         <div class="row">
-            <div class="col-12 text-center">
-                <a href="{{ route('vuelos.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Vuelos</a>
-                <a href="{{ route('boletos.create') }}" class="btn btn-success btn-lg">Siguiente: Boletos</a>
+            <div class="col-12">
+                <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
+                    <a href="{{ route('vuelos.create') }}" class="btn btn-warning btn-lg">Anterior: Vuelos</a>
+                    <a href="{{ route('boletos.create') }}" class="btn btn-success btn-lg">Siguiente: Boletos</a>
+                    @if(request()->has('vuelo_id'))
+                        <a href="{{ route('vuelos.disponibles', ['origen' => session('busquedaVuelos.origen', ''), 'destino' => session('busquedaVuelos.destino', ''), 'fecha_ida' => session('busquedaVuelos.fecha_ida', ''), 'tipo_viaje' => session('busquedaVuelos.tipo_viaje', ''), 'pasajeros' => session('busquedaVuelos.pasajeros', '')]) }}" class="btn btn-info btn-lg">Regresar a Vuelos Disponibles</a>
+                    @endif
+                </div>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 @endsection
 
@@ -277,7 +290,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     <label for="Estado_${i}" class="form-label">Estado</label>
                     <select class="form-control" id="Estado_${i}" name="pasajeros[${i}][Estado]" required>
                         <option value="">Seleccione un estado</option>
-                        <option value="Activo">Activo</option>
+                        <option value="Activo" selected>Activo</option>
                         <option value="Inactivo">Inactivo</option>
                         <option value="Suspendido">Suspendido</option>
                         <option value="Bloqueado">Bloqueado</option>

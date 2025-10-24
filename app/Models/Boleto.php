@@ -35,7 +35,7 @@ class Boleto extends Model
 
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        $result = DB::select('CALL Sp_Insertar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $data['idBoleto'],
             $data['idVuelo'],
             $data['idPasajero'],
@@ -46,6 +46,7 @@ class Boleto extends Model
             $data['Impuesto'],
             $data['Total']
         ]);
+        return $data['idBoleto']; // Retornar el ID del boleto insertado
     }
 
      public static function actualizar($id, $data)

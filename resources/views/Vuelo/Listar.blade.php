@@ -34,18 +34,20 @@
         <tbody>
             @foreach($vuelos as $vuelo)
             <tr>
-                <td>{{ $vuelo->IdVuelo }}</td>
-                <td>{{ $vuelo->avion->IdAvion ?? 'N/A' }} - {{ $vuelo->avion->Placa ?? 'N/A' }}</td>
-                <td>{{ $vuelo->aeropuertoOrigen->IdAeropuerto ?? 'N/A' }} - {{ $vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }}</td>
-                <td>{{ $vuelo->aeropuertoDestino->IdAeropuerto ?? 'N/A' }} - {{ $vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}</td>
+                <td>{{ $vuelo->idVuelo }}</td>
+                <td>{{ $vuelo->avion()->first()->Modelo ?? 'N/A' }}</td>
+                <td>{{ $vuelo->aeropuertoOrigen()->first()->Nombre ?? 'N/A' }}</td>
+                <td>{{ $vuelo->aeropuertoDestino()->first()->Nombre ?? 'N/A' }}</td>
                 <td>{{ $vuelo->FechaSalida }}</td>
                 <td>{{ $vuelo->FechaLlegada }}</td>
                 <td>Q{{ number_format($vuelo->Precio, 2) }}</td>
                 <td>{{ $vuelo->Estado }}</td>
-                <td>
-                    <a href="{{ route('vuelo.show', $vuelo) }}" class="btn btn-info btn-sm">Ver</a>
-                    <a href="{{ route('vuelo.edit', $vuelo) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ route('vuelo.delete', $vuelo) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                <td class="text-center">
+                    <div class="btn-group" role="group">
+                        <a href="{{ route('vuelo.show', $vuelo) }}" class="btn btn-info btn-sm">Ver</a>
+                        <a href="{{ route('vuelo.edit', $vuelo) }}" class="btn btn-warning btn-sm">Editar</a>
+                        <a href="{{ route('vuelo.delete', $vuelo) }}" class="btn btn-danger btn-sm">Eliminar</a>
+                    </div>
                 </td>
             </tr>
             @endforeach
