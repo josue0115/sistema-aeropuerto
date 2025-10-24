@@ -7,6 +7,13 @@
             <div class="card">
                 <div class="card-header">
                     <h4>Crear Nuevo Boleto</h4>
+                    @if(isset($vueloSeleccionado))
+                        <div class="alert alert-info mt-2">
+                            <strong>Vuelo Seleccionado:</strong> {{ $vueloSeleccionado->idVuelo }} -
+                            {{ $vueloSeleccionado->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vueloSeleccionado->aeropuertoDestino->Nombre ?? 'N/A' }}
+                            ({{ $vueloSeleccionado->FechaSalida }})
+                        </div>
+                    @endif
                 </div>
                 <div class="card-body">
                     <form action="{{ route('boletos.store') }}" method="POST">
@@ -26,7 +33,8 @@
                                 <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
                                     <option value="">Seleccione un vuelo</option>
                                     @foreach($vuelos as $vuelo)
-                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" {{ old('idVuelo') == $vuelo->idVuelo ? 'selected' : '' }}>
+                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}"
+                                                {{ (isset($vueloSeleccionado) && $vueloSeleccionado->idVuelo == $vuelo->idVuelo) || old('idVuelo') == $vuelo->idVuelo ? 'selected' : '' }}>
                                             {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vuelo->aeropuertoDestino->Nombre ?? 'N/A' }}
                                         </option>
                                     @endforeach
@@ -40,13 +48,27 @@
                         <div class="row">
                             <div class="col-md-6 mb-3">
                                 <label for="idPasajero" class="form-label">Pasajero</label>
-                                <select class="form-control @error('idPasajero') is-invalid @enderror" id="idPasajero" name="idPasajero">
+                                <select class="form-control @error('idPasajero') is-invalid @enderror" id="idPasajero" name="idPasajero" required>
                                     <option value="">Seleccione un pasajero</option>
-                                    @foreach($pasajeros as $pasajero)
-                                        <option value="{{ $pasajero->idPasajero }}" {{ old('idPasajero') == $pasajero->idPasajero ? 'selected' : '' }}>
-                                            {{ $pasajero->idPasajero }} - {{ $pasajero->Nombre }} {{ $pasajero->Apellido }}
-                                        </option>
-                                    @endforeach
+                                    @php
+                                        $pasajerosCreados = session('pasajeros_creados', []);
+                                        $primerPasajeroId = !empty($pasajerosCreados) ? $pasajerosCreados[0] : null;
+                                    @endphp
+                                    @if($pasajeros instanceof \Illuminate\Database\Eloquent\Collection)
+                                        @foreach($pasajeros as $pasajero)
+                                            <option value="{{ $pasajero->idPasajero }}"
+                                                    {{ (old('idPasajero') == $pasajero->idPasajero || (!$loop->first && $primerPasajeroId == $pasajero->idPasajero)) ? 'selected' : '' }}>
+                                                {{ $pasajero->idPasajero }} - {{ $pasajero->Nombre }} {{ $pasajero->Apellido }}
+                                            </option>
+                                        @endforeach
+                                    @else
+                                        @foreach($pasajeros as $index => $pasajero)
+                                            <option value="{{ $pasajero->idPasajero }}"
+                                                    {{ (old('idPasajero') == $pasajero->idPasajero || ($index == 0 && $primerPasajeroId == $pasajero->idPasajero)) ? 'selected' : '' }}>
+                                                {{ $pasajero->idPasajero }} - {{ $pasajero->Nombre }} {{ $pasajero->Apellido }}
+                                            </option>
+                                        @endforeach
+                                    @endif
                                 </select>
                                 @error('idPasajero')
                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -73,7 +95,7 @@
 
                             <div class="col-md-6 mb-3">
                                 <label for="Cantidad" class="form-label">Cantidad</label>
-                                <input type="number" step="0.01" class="form-control @error('Cantidad') is-invalid @enderror" id="Cantidad" name="Cantidad" value="{{ old('Cantidad') }}" min="0">
+                                <input type="number" step="0.01" class="form-control @error('Cantidad') is-invalid @enderror" id="Cantidad" name="Cantidad" value="{{ old('Cantidad', $cantidadDefault ?? 1) }}" min="0">
                                 @error('Cantidad')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -105,7 +127,8 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Crear Boleto</button>
+                        <button type="submit" class="btn btn-primary" name="action" value="create">Crear Boleto</button>
+                        <button type="button" class="btn btn-success" id="btn-siguiente-servicios">Siguiente: Servicios</button>
                         <a href="{{ route('boletos.index') }}" class="btn btn-secondary">Cancelar</a>
                     </form>
                 </div>
@@ -114,14 +137,14 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="container mt-4">
+    <!-- <div class="container mt-4">
         <div class="row">
             <div class="col-12 text-center">
                 <a href="{{ route('pasajeros.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Pasajeros</a>
                 <a href="{{ route('servicios.create') }}" class="btn btn-success btn-lg">Siguiente: Servicios</a>
             </div>
         </div>
-    </div>
+    </div> -->
 </div>
 @endsection
 
@@ -134,6 +157,8 @@
         const descuentoInput = document.getElementById('Descuento');
         const impuestoInput = document.getElementById('Impuesto');
         const totalInput = document.getElementById('Total');
+        const btnSiguiente = document.getElementById('btn-siguiente-servicios');
+        const form = document.querySelector('form');
 
         function calcularDescuento(cantidad) {
             if (cantidad >= 5 && cantidad < 10) return 0.05;
@@ -177,6 +202,106 @@
 
         // Calcular inicialmente
         calcularTotal();
+
+        // Auto-seleccionar vuelo si hay uno preseleccionado
+        if (vueloSelect.value) {
+            vueloSelect.dispatchEvent(new Event('change'));
+        }
+
+        // Evento para el botón "Siguiente: Servicios"
+        btnSiguiente.addEventListener('click', function() {
+            // Crear FormData con los datos del formulario
+            const formData = new FormData(form);
+            formData.append('action', 'next');
+
+            // Mostrar preloader de pantalla completa
+            showFullscreenLoader();
+
+            // Mostrar el preloader por al menos 3 segundos antes de enviar la petición AJAX
+            setTimeout(() => {
+                // Enviar petición AJAX
+                fetch('{{ route("boletos.store") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: {
+                        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                        'Accept': 'application/json',
+                        'X-Requested-With': 'XMLHttpRequest'
+                    }
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        return response.json().then(err => {
+                            throw new Error(err.message || 'Error en la solicitud');
+                        });
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.boleto_id) {
+                        // Abrir PDF en nueva pestaña
+                        window.open('{{ url("/boletos") }}/' + data.boleto_id + '/pdf', '_blank');
+
+                        // Redirigir a servicios después de un breve delay
+                        setTimeout(() => {
+                            window.location.href = '{{ route("servicios.create") }}';
+                        }, 500);
+                    } else {
+                        hideFullscreenLoader();
+                        alert('Error al crear el boleto');
+                        btnSiguiente.disabled = false;
+                        btnSiguiente.innerHTML = 'Siguiente: Servicios';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    hideFullscreenLoader();
+                    alert('Error al procesar la solicitud: ' + error.message);
+                    btnSiguiente.disabled = false;
+                    btnSiguiente.innerHTML = 'Siguiente: Servicios';
+                });
+            }, 3000);
+        });
     });
+
+    // Función para mostrar preloader de pantalla completa
+    function showFullscreenLoader() {
+        let loader = document.getElementById('fullscreen-loader');
+        if (!loader) {
+            loader = document.createElement('div');
+            loader.id = 'fullscreen-loader';
+            loader.innerHTML = `
+                <div style="
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    width: 100%;
+                    height: 100%;
+                    background-color: rgba(255, 255, 255, 0.95);
+                    display: flex;
+                    justify-content: center;
+                    align-items: center;
+                    z-index: 9999;
+                    flex-direction: column;
+                    border: 2px solid #007bff;
+                    border-radius: 10px;
+                    box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+                ">
+                    <img src="{{ asset('images/plane-loader.gif') }}" alt="Cargando..." style="width: 250px; height: 250px; margin-bottom: 20px;">
+                    <h4 style="color: #007bff; font-weight: bold;">Procesando...</h4>
+                </div>
+            `;
+            document.body.appendChild(loader);
+        }
+        loader.style.display = 'flex';
+    }
+
+    // Función para ocultar preloader de pantalla completa
+    function hideFullscreenLoader() {
+        const loader = document.getElementById('fullscreen-loader');
+        if (loader) {
+            loader.style.display = 'none';
+        }
+    }
 </script>
 @endsection

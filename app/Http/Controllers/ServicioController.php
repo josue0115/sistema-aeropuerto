@@ -23,9 +23,18 @@ class ServicioController extends Controller
      */
     public function create()
     {
+        // Obtener boleto creado en el paso anterior
+        $boletoCreado = null;
+        if (session()->has('boleto_creado')) {
+            $boletoCreado = Boleto::obtenerPorId(session('boleto_creado'));
+            if (!empty($boletoCreado)) {
+                $boletoCreado = $boletoCreado[0];
+            }
+        }
+
         $boletos = Boleto::listar();
         $tipoServicios = TipoServicio::all();
-        return view('servicios.create', compact('boletos', 'tipoServicios'));
+        return view('servicios.create', compact('boletos', 'tipoServicios', 'boletoCreado'));
     }
 
     /**
@@ -35,17 +44,56 @@ class ServicioController extends Controller
     {
         $request->validate([
             'idBoleto' => 'nullable|integer',
-            'idTipoServicio' => 'required|integer|exists:tipo_servicio,idTipoServicio',
             'Fecha' => 'nullable|date',
-            'Cantidad' => 'required|numeric|min:0.01',
             'Estado' => 'nullable|string|max:20',
+            'servicios' => 'required|array|min:1',
+            'servicios.*.idTipoServicio' => 'required|integer|exists:tipo_servicio,idTipoServicio',
+            'servicios.*.Cantidad' => 'required|numeric|min:0.01',
+            'servicios.*.CostoTotal' => 'nullable|numeric',
         ]);
 
-        $data = $request->all();
+        $idBoleto = $request->input('idBoleto');
+        $fecha = $request->input('Fecha');
+        $estado = $request->input('Estado');
+        $servicios = $request->input('servicios');
 
-        Servicio::insertar($data);
+        // Calcular el total de servicios
+        $totalServicios = 0;
+        foreach ($servicios as $servicioData) {
+            $totalServicios += $servicioData['CostoTotal'];
+        }
 
-        return redirect()->route('servicios.index')->with('success', 'Servicio creado exitosamente.');
+        // Sumar el total de servicios al total acumulado en la sesión
+        $totalActual = session('total_acumulado', 0);
+        session(['total_acumulado' => $totalActual + $totalServicios]);
+
+        // Insertar cada servicio
+        foreach ($servicios as $servicioData) {
+            $data = [
+                'idBoleto' => $idBoleto,
+                'idTipoServicio' => $servicioData['idTipoServicio'],
+                'Fecha' => $fecha,
+                'Cantidad' => $servicioData['Cantidad'],
+                'Estado' => $estado,
+            ];
+
+            Servicio::insertar($data);
+        }
+
+        // Verificar si se presionó el botón "Siguiente: Asientos"
+        if ($request->input('action') === 'next') {
+            // Obtener el vuelo del boleto para preseleccionar en asientos
+            $boleto = Boleto::obtenerPorId($idBoleto);
+            if (!empty($boleto)) {
+                $boleto = $boleto[0];
+                session(['vuelo_para_asientos' => $boleto->idVuelo]);
+            }
+
+            // Redirigir a la creación de asientos
+            return redirect()->route('asientos.create')->with('success', 'Servicios creados exitosamente. Ahora selecciona los asientos.');
+        }
+
+        return redirect()->route('servicios.index')->with('success', 'Servicios creados exitosamente.');
     }
 
     /**
@@ -69,7 +117,9 @@ class ServicioController extends Controller
         if (empty($servicio)) {
             abort(404);
         }
-        return view('servicios.edit', compact('servicio'));
+        $boletos = Boleto::listar();
+        $tipoServicios = TipoServicio::all();
+        return view('servicios.edit', compact('servicio', 'boletos', 'tipoServicios'));
     }
 
     /**

@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\Factura;
 use Illuminate\Http\Request;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Facades\DB;
 
 class FacturaController extends Controller
 {
@@ -95,5 +97,92 @@ class FacturaController extends Controller
         Factura::eliminar($id);
 
         return redirect()->route('facturas.index')->with('success', 'Factura eliminada exitosamente.');
+    }
+
+    /**
+     * Generate PDF for the specified factura.
+     */
+    public function generatePdf($factura)
+    {
+        $id = is_object($factura) ? $factura->idFactura : $factura;
+
+       
+        $facturaData = Factura::obtenerPorId($id);
+        if (empty($facturaData)) {
+            abort(404);
+        }
+
+        $factura = (array) $facturaData[0];
+
+        // Obtener datos adicionales para la factura
+        $boleto = null;
+        $pasajero = null;
+        $vuelo = null;
+        $servicios = [];
+        $asiento = null;
+
+        if ($factura['idBoleto']) {
+            // Obtener boleto
+            $boletoData = DB::select('CALL Sp_Consulta_Boleto(?)', [$factura['idBoleto']]);
+            if (!empty($boletoData)) {
+                $boleto = $boletoData[0];
+
+                // Obtener pasajero
+                $pasajeroData = DB::select('CALL Sp_Consulta_Pasajero(?)', [$boleto->idPasajero]);
+                if (!empty($pasajeroData)) {
+                    $pasajero = $pasajeroData[0];
+                }
+
+                // Obtener vuelo
+                $vueloData = DB::select('
+                    SELECT v.*, ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+                    FROM vuelo v
+                    LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
+                    LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
+                    WHERE v.idVuelo = ?
+                ', [$boleto->idVuelo]);
+
+                if (!empty($vueloData)) {
+                    $vuelo = $vueloData[0];
+                }
+
+                // Obtener servicios del boleto
+                $servicios = DB::select('
+                    SELECT s.*, ts.Nombre as tipo_servicio, ts.Costo as costo_unitario, (ts.Costo * s.Cantidad) as CostoTotal
+                    FROM servicios s
+                    JOIN tipo_servicio ts ON s.idTipoServicio = ts.idTipoServicio
+                    WHERE s.idBoleto = ?
+                ', [$boleto->idBoleto]);
+
+                // Obtener asiento (último del vuelo del boleto)
+                $asientos = DB::select('
+                    SELECT a.*, v.idVuelo, v.Precio as precio_vuelo,
+                           ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+                    FROM asientos a
+                    JOIN vuelo v ON a.idVuelo = v.idVuelo
+                    LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
+                    LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
+                    WHERE a.idVuelo = ?
+                    ORDER BY a.idAsiento DESC LIMIT 1
+                ', [$boleto->idVuelo]);
+
+                if (!empty($asientos)) {
+                    $asiento = $asientos[0];
+                }
+            }
+        }
+
+        $data = [
+            'factura' => $factura,
+            'boleto' => $boleto,
+            'pasajero' => $pasajero,
+            'vuelo' => $vuelo,
+            'servicios' => $servicios,
+            'asiento' => $asiento,
+        ];
+
+        $pdf = Pdf::loadView('facturas.pdf', $data);
+
+        return $pdf->download('factura_' . $id . '.pdf');
     }
 }

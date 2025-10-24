@@ -128,13 +128,19 @@ Breadcrumbs::for('servicios.create', function (BreadcrumbTrail $trail) {
 // Home > Servicios > [Servicio]
 Breadcrumbs::for('servicios.show', function (BreadcrumbTrail $trail, $servicio) {
     $trail->parent('servicios.index');
-    $trail->push('Servicio ' . $servicio->idServicio, route('servicios.show', $servicio));
+    $id = is_object($servicio) ? $servicio->idServicio : $servicio;
+    $result = Servicio::obtenerPorId($id);
+    $servicioObj = $result ? (object) $result[0] : abort(404);
+    $trail->push('Servicio ' . $servicioObj->idServicio, route('servicios.show', $id));
 });
 
 // Home > Servicios > [Servicio] > Editar
 Breadcrumbs::for('servicios.edit', function (BreadcrumbTrail $trail, $servicio) {
+    $id = is_object($servicio) ? $servicio->idServicio : $servicio;
+    $result = Servicio::obtenerPorId($id);
+    $servicioObj = $result ? (object) $result[0] : abort(404);
     $trail->parent('servicios.show', $servicio);
-    $trail->push('Editar', route('servicios.edit', $servicio));
+    $trail->push('Editar', route('servicios.edit', $id));
 });
 
 // Home > Asientos

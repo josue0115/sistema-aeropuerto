@@ -19,7 +19,7 @@ class PasajeroController extends Controller
     /**
      * Show the form for creating a new resource.
      */
-    public function create()
+    public function create(Request $request)
     {
         // Recibir datos de búsqueda desde sessionStorage o parámetros GET
         $busquedaData = session('busquedaVuelos', []);
@@ -29,7 +29,17 @@ class PasajeroController extends Controller
             ];
         }
 
-        return view('pasajeros.create', compact('busquedaData'));
+        // Guardar el vuelo seleccionado en la sesión si viene por parámetro
+        if ($request->has('vuelo_id')) {
+            session(['vuelo_seleccionado' => $request->vuelo_id]);
+        }
+
+        $vueloSeleccionado = null;
+        if (session()->has('vuelo_seleccionado')) {
+            $vueloSeleccionado = \App\Models\Vuelo::with(['aeropuertoOrigen', 'aeropuertoDestino'])->find(session('vuelo_seleccionado'));
+        }
+
+        return view('pasajeros.create', compact('busquedaData', 'vueloSeleccionado'));
     }
 
     /**
@@ -46,10 +56,22 @@ class PasajeroController extends Controller
             'pasajeros.*.Estado' => 'required|string|max:45',
         ]);
 
-        foreach ($request->pasajeros as $pasajeroData) {
+        $pasajerosIds = [];
+        foreach ($request->pasajeros as $index => $pasajeroData) {
             // Remove idPasajero if present, let DB auto-increment
             unset($pasajeroData['idPasajero']);
-            Pasajero::insertar($pasajeroData);
+            $pasajeroId = Pasajero::insertar($pasajeroData);
+            \Log::info("Pasajero {$index} insertado con ID:", ['id' => $pasajeroId]);
+            $pasajerosIds[] = $pasajeroId;
+        }
+
+        // Guardar los IDs de pasajeros en la sesión para usarlos en boletos
+        session(['pasajeros_creados' => $pasajerosIds]);
+        \Log::info('Pasajeros guardados en sesión:', ['ids' => $pasajerosIds]);
+
+        // Verificar si el usuario quiere continuar a boletos o solo guardar
+        if ($request->input('action') === 'continue_to_boletos') {
+            return redirect()->route('boletos.create')->with('success', 'Pasajeros guardados exitosamente. Ahora puede crear los boletos.');
         }
 
         return redirect()->route('pasajeros.index')->with('success', 'Pasajeros creados exitosamente.');

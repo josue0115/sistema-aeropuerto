@@ -22,8 +22,8 @@
                                         <select name="idVuelo" id="idVuelo" class="form-control" required>
                                             <option value="">Seleccione un vuelo</option>
                                             @foreach($vuelos as $vuelo)
-                                                <option value="{{ $vuelo->IdVuelo }}" {{ old('idVuelo') == $vuelo->IdVuelo ? 'selected' : '' }}>
-                                                    Vuelo {{ $vuelo->IdVuelo }} - {{ $vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} a {{ $vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}
+                                                <option value="{{ $vuelo->idVuelo }}" {{ old('idVuelo') == $vuelo->idVuelo ? 'selected' : (isset($vueloSeleccionado) && $vueloSeleccionado == $vuelo->idVuelo ? 'selected' : '') }}>
+                                                    Vuelo {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuerto_origen_nombre ?? 'N/A' }} a {{ $vuelo->aeropuerto_destino_nombre ?? 'N/A' }}
                                                 </option>
                                             @endforeach
                                         </select>
@@ -74,7 +74,8 @@
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Crear Asiento</button>
+                        <button type="submit" name="action" value="create" class="btn btn-primary">Crear Asiento</button>
+                        <button type="submit" name="action" value="finalize" class="btn btn-success">Finalizar Reserva</button>
                         <a href="{{ route('asientos.index') }}" class="btn btn-secondary">Cancelar</a>
                     </form>
                 </div>
@@ -83,14 +84,14 @@
     </div>
 
     <!-- Navigation Buttons -->
-    <div class="container mt-4">
+    <!-- <div class="container mt-4">
         <div class="row">
             <div class="col-12 text-center">
                 <a href="{{ route('servicios.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Servicios</a>
                 <a href="{{ route('reservas.create') }}" class="btn btn-success btn-lg">Finalizar Reserva</a>
             </div>
         </div>
-    </div>
+    </div> -->
 
     <!-- Modal de Selección de Asientos -->
                     <div class="modal fade" id="seatModal" tabindex="-1" aria-labelledby="seatModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
@@ -363,6 +364,12 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('Clase').value = '';
         selectedSeat = null;
     });
+
+    // Preseleccionar vuelo si viene de la sesión
+    const vueloSeleccionado = @json($vueloSeleccionado ?? null);
+    if (vueloSeleccionado && !idVueloSelect.value) {
+        idVueloSelect.value = vueloSeleccionado;
+    }
 });
 </script>
 @endsection

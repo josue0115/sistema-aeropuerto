@@ -34,13 +34,27 @@
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
+                            <!-- <div class="col-md-6 mb-3">
                                 <label for="idVuelo" class="form-label">Código Vuelo</label>
                                 <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
                                     <option value="">Seleccione un vuelo</option>
                                     @foreach($vuelos as $vuelo)
                                         <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" data-fecha-salida="{{ $vuelo->FechaSalida }}" {{ old('idVuelo', $reserva->idVuelo) == $vuelo->idVuelo ? 'selected' : '' }}>
                                             {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuerto_origen_nombre ?? 'N/A' }} a {{ $vuelo->aeropuerto_destino_nombre ?? 'N/A' }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('idVuelo')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                            </div> -->
+                            <div class="col-md-6 mb-3">
+                                <label for="idVuelo" class="form-label">Código Vuelo</label>
+                                <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
+                                    <option value="">Seleccione un vuelo</option>
+                                    @foreach($vuelos as $vuelo)
+                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" data-fecha-salida="{{ $vuelo->FechaSalida }}" {{ old('idVuelo', $reserva->idVuelo) == $vuelo->idVuelo ? 'selected' : '' }}>
+                                            {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vuelo->aeropuertoDestino->Nombre ?? 'N/A' }}
                                         </option>
                                     @endforeach
                                 </select>
