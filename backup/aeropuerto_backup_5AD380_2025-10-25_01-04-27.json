@@ -1,0 +1,12 @@
+{
+    "IdAeropuerto": "5AD380",
+    "NombreAeropuerto": "saSA",
+    "Pais": "Guatemala",
+    "Ciudad": "Ciudad de Guatemala",
+    "Estado": "Activo",
+    "created_at": "2025-10-25T01:03:48.000000Z",
+    "updated_at": "2025-10-25T01:03:48.000000Z",
+    "deleted_at": "2025-10-25T01:04:27.492369Z",
+    "deleted_by": "Sistema",
+    "action": "DELETE"
+}

@@ -21,6 +21,7 @@ use App\Http\Controllers\TipoServicioController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AeropuertoController;
 
+
 Route::get('/', [HomeController::class, 'index'])->name('home');
 // Mostrar lista de aeropuertos
 Route::get('aeropuerto/Listar', [AeropuertoController::class, 'Listar'])->name('aeropuerto.listar');
@@ -40,6 +41,8 @@ Route::get('aeropuerto/{aeropuerto}/delete', [AeropuertoController::class, 'dele
 Route::post('/aeropuerto/store', [AeropuertoController::class, 'store'])->name('aeropuerto.store');
 Route::put('/aeropuerto/update/{aeropuerto}', [AeropuertoController::class, 'update'])->name('aeropuerto.update');
 Route::delete('/aeropuerto/destroy/{aeropuerto}', [AeropuertoController::class, 'destroy'])->name('aeropuerto.destroy');
+
+
 
 // Rutas para Aerolinea
 Route::get('/aerolinea/Listar', [AerolineaController::class, 'Listar'])->name('aerolinea.Listar');

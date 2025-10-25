@@ -91,6 +91,31 @@ class AerolineaController extends Controller
     // Eliminar
     public function destroy(Aerolinea $aerolinea)
     {
+        // Crear backup en JSON antes de eliminar
+        $backupData = [
+            'IdAerolinea' => $aerolinea->IdAerolinea,
+            'NombreAerolinea' => $aerolinea->NombreAerolinea,
+            'Pais' => $aerolinea->Pais,
+            'Ciudad' => $aerolinea->Ciudad,
+            'Estado' => $aerolinea->Estado,
+            'created_at' => $aerolinea->created_at,
+            'updated_at' => $aerolinea->updated_at,
+            'deleted_at' => now(),
+            'deleted_by' => 'Sistema',
+            'action' => 'DELETE'
+        ];
+
+        $filename = 'aerolinea_backup_' . $aerolinea->IdAerolinea . '_' . now()->format('Y-m-d_H-i-s') . '.json';
+        $path = base_path('backup/' . $filename);
+
+        // Asegurar que el directorio existe
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($path, json_encode($backupData, JSON_PRETTY_PRINT));
+
         $aerolinea->delete();
         return redirect()->route('aerolinea.Listar')->with('success', 'Aerolínea eliminada correctamente');
     }

@@ -23,10 +23,6 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <label>ID</label>
-                    <input type="text" name="IdAeropuerto" class="form-control" required>
-                </div>
-                <div class="mb-3">
                     <label>Nombre</label>
                     <input type="text" name="NombreAeropuerto" class="form-control" required>
                 </div>

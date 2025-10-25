@@ -54,14 +54,14 @@ class VueloController extends Controller
     {
         $request->validate([
             'IdAvion' => 'required|exists:avion,IdAvion',
-            'idAeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
-            'idAeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:idAeropuertoOrigen',
+            'AeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
+            'AeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:AeropuertoOrigen',
             'FechaSalida' => 'required|date|after_or_equal:today',
             'FechaLlegada' => 'required|date|after_or_equal:FechaSalida',
             'Estado' => 'required|max:10',
         ]);
 
-        $precio = $this->getPrecioByRuta($request->idAeropuertoOrigen, $request->idAeropuertoDestino);
+        $precio = $this->getPrecioByRuta($request->AeropuertoOrigen, $request->AeropuertoDestino);
         $request->merge(['Precio' => $precio]);
 
         Vuelo::create($request->all());
@@ -76,14 +76,14 @@ class VueloController extends Controller
     {
         $request->validate([
             'IdAvion' => 'required|exists:avion,IdAvion',
-            'idAeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
-            'idAeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:idAeropuertoOrigen',
+            'AeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
+            'AeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:AeropuertoOrigen',
             'FechaSalida' => 'required|date|after_or_equal:today',
             'FechaLlegada' => 'required|date|after_or_equal:FechaSalida',
             'Estado' => 'required|max:10',
         ]);
 
-        $precio = $this->getPrecioByRuta($request->idAeropuertoOrigen, $request->idAeropuertoDestino);
+        $precio = $this->getPrecioByRuta($request->AeropuertoOrigen, $request->AeropuertoDestino);
         $request->merge(['Precio' => $precio]);
 
         $vuelo->update($request->all());
