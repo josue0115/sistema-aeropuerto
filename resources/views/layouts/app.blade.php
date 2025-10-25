@@ -3,6 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'Laravel') }}</title>
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -12,17 +13,28 @@
 </head>
 <body class="antialiased">
     <!-- Navigation Breadcrumb -->
-    @if(request()->routeIs(['vuelos.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create']))
+    @if(request()->routeIs(['vuelos.create', 'vuelos.disponibles', 'reservas.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create']))
         @include('breadcrumbs.reservation')
     @else
-        <nav aria-label="breadcrumb" class="bg-light p-3">
+        <nav aria-label="breadcrumb" class="bg-light p-3" style="position: relative;">
             <div class="container">
                 @if(Breadcrumbs::exists())
                     {{ Breadcrumbs::render() }}
                 @endif
             </div>
+            @if(session()->has('total_acumulado'))
+                <div class="absolute top-3 right-3 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
+                    <div class="text-sm font-medium">Total Reserva</div>
+                    <div class="text-lg font-bold">${{ number_format(session('total_acumulado'), 2) }}</div>
+                </div>
+            @endif
         </nav>
     @endif
+    
+
+    <div class="container-fluid px-3 px-md-4 py-4">
+            @yield('content')
+        </div>
 
     <div class="relative sm:flex sm:justify-center sm:items-center  bg-dots-darker bg-center bg-gray-100 dark:bg-dots-lighter dark:bg-gray-900 selection:bg-red-500 selection:text-white">
         @if (Route::has('login'))
@@ -39,9 +51,7 @@
             </div>
         @endif
 
-        <div class="max-w-7xl mx-auto p-6 lg:p-8">
-            @yield('content')
-        </div>
+        
     </div>
 
     <style>

@@ -20,14 +20,14 @@
                                 <div class="card-body">
                                     <form id="busqueda-vuelos" method="GET" action="{{ route('vuelos.create') }}">
                                         <div class="row">
-                                            <div class="col-md-3 mb-3">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3">
                                                 <label for="tipo_viaje" class="form-label">Tipo de Viaje</label>
                                                 <select class="form-control" id="tipo_viaje" name="tipo_viaje" required>
                                                     <option value="ida">Solo Ida</option>
                                                     <option value="ida_vuelta">Ida y Vuelta</option>
                                                 </select>
                                             </div>
-                                            <div class="col-md-3 mb-3">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3">
                                                 <label for="origen" class="form-label">Origen</label>
                                                 <select class="form-control" id="origen" name="origen" required>
                                                     <option value="">Seleccionar Origen</option>
@@ -36,7 +36,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-md-3 mb-3">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3">
                                                 <label for="destino" class="form-label">Destino</label>
                                                 <select class="form-control" id="destino" name="destino" required>
                                                     <option value="">Seleccionar Destino</option>
@@ -45,7 +45,7 @@
                                                     @endforeach
                                                 </select>
                                             </div>
-                                            <div class="col-md-3 mb-3">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3">
                                                 <label for="pasajeros" class="form-label">Pasajeros</label>
                                                 <select class="form-control" id="pasajeros" name="pasajeros" required>
                                                     <option value="1">1 Pasajero</option>
@@ -61,15 +61,15 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-md-3 mb-3">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3">
                                                 <label for="fecha_ida" class="form-label">Fecha de Ida</label>
                                                 <input type="date" class="form-control" id="fecha_ida" name="fecha_ida" min="{{ date('Y-m-d') }}" required>
                                             </div>
-                                            <div class="col-md-3 mb-3" id="fecha_vuelta_container" style="display: none;">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3" id="fecha_vuelta_container" style="display: none;">
                                                 <label for="fecha_vuelta" class="form-label">Fecha de Vuelta</label>
                                                 <input type="date" class="form-control" id="fecha_vuelta" name="fecha_vuelta1" min="{{ date('Y-m-d') }}">
                                             </div>
-                                            <div class="col-md-3 mb-3 d-flex align-items-end">
+                                            <div class="col-12 col-md-6 col-lg-3 mb-3 d-flex align-items-end">
                                                 <button type="submit" class="btn btn-primary w-100">Buscar Vuelos</button>
                                             </div>
                                         </div>
@@ -80,7 +80,7 @@
                     </div>
 
                     <div class="row">
-                        <div class="col-md-6 mb-4">
+                        <div class="col-12 col-sm-6 col-lg-3 mb-4">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Vuelos</h5>
@@ -89,7 +89,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-4">
+                        <div class="col-12 col-sm-6 col-lg-3 mb-4">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Pasajeros</h5>
@@ -98,7 +98,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-4">
+                        <div class="col-12 col-sm-6 col-lg-3 mb-4">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Servicios</h5>
@@ -107,7 +107,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col-md-6 mb-4">
+                        <div class="col-12 col-sm-6 col-lg-3 mb-4">
                             <div class="card h-100">
                                 <div class="card-body text-center">
                                     <h5 class="card-title">Asientos</h5>
@@ -124,43 +124,43 @@
                         <div class="col-md-12">
                             <h4 class="text-center mb-3">Otras Funcionalidades</h4>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('aerolineas.index') }}" class="btn btn-outline-primary btn-block">Aerolineas</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('aeropuertos.index') }}" class="btn btn-outline-secondary btn-block">Aeropuertos</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('avion.listar') }}" class="btn btn-outline-success btn-block">Aviones</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('personal.listar') }}" class="btn btn-outline-info btn-block">Personal</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('mantenimiento.listar') }}" class="btn btn-outline-warning btn-block">Mantenimiento</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('horario.index') }}" class="btn btn-outline-danger btn-block">Horarios</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('escala.index') }}" class="btn btn-outline-dark btn-block">Escalas</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('tipo_servicios.index') }}" class="btn btn-outline-primary btn-block">Tipo Servicios</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('boletos.index') }}" class="btn btn-outline-success btn-block">Boletos</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('reservas.index') }}" class="btn btn-outline-info btn-block">Reservas</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('equipajes.index') }}" class="btn btn-outline-warning btn-block">Equipajes</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('facturas.index') }}" class="btn btn-outline-danger btn-block">Facturas</a>
                         </div>
-                        <div class="col-md-3 mb-3">
+                        <div class="col-6 col-sm-4 col-md-3 mb-3">
                             <a href="{{ route('historial_vuelos.index') }}" class="btn btn-outline-dark btn-block">Historial Vuelos</a>
                         </div>
                     </div>

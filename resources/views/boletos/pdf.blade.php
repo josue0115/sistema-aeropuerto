@@ -293,6 +293,18 @@
                     <div class="value">{{ $vuelo->idVuelo }}</div>
                 </div>
                 <div class="row">
+                    <div class="label">Avión:</div>
+                    <div class="value">{{ $vuelo->avion->Modelo ?? 'N/A' }}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Origen:</div>
+                    <div class="value">{{ $vuelo->aeropuertoOrigen->Nombre ?? 'N/A' }} ({{ $vuelo->aeropuertoOrigen->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoOrigen->Pais ?? 'N/A' }})</div>
+                </div>
+                <div class="row">
+                    <div class="label">Destino:</div>
+                    <div class="value">{{ $vuelo->aeropuertoDestino->Nombre ?? 'N/A' }} ({{ $vuelo->aeropuertoDestino->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoDestino->Pais ?? 'N/A' }})</div>
+                </div>
+                <div class="row">
                     <div class="label">Salida (Fecha/Hora):</div>
                     <div class="value" style="font-weight: 600;">{{ $vuelo->FechaSalida }}</div>
                 </div>

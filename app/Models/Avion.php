@@ -9,7 +9,7 @@ class Avion extends Model
 {
     use HasFactory;
 
-    protected $table = 'avion';
+    protected $table = 'aviones';
     protected $primaryKey = 'IdAvion';
     public $incrementing = false; // porque es VARCHAR
     protected $keyType = 'string';
@@ -32,6 +32,10 @@ class Avion extends Model
 
     public static function listar()
     {
+<<<<<<< HEAD
         return self::with('aerolinea')->get();
+=======
+        return self::all();
+>>>>>>> a60e3a7bc7051f4003c150120a92d83368ed27e8
     }
 }

@@ -20,6 +20,7 @@ use App\Http\Controllers\AsientoController;
 use App\Http\Controllers\TipoServicioController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AeropuertoController;
+use App\Http\Controllers\PagoController;
 
 
 Route::get('/', [HomeController::class, 'index'])->name('home');
@@ -89,8 +90,13 @@ Route::get('/personal/{personal}', [PersonalController::class, 'show'])->name('p
 Route::get('/personal/{personal}/edit', [PersonalController::class, 'edit'])->name('personal.edit');
 // Mostrar confirmación de eliminación
 Route::get('/personal/{personal}/delete', [PersonalController::class, 'delete'])->name('personal.delete');
+// Rutas para Pagos
+Route::get('pagos/success', [PagoController::class, 'success'])->name('pagos.success');
+Route::resource('pagos', PagoController::class);
+
 // Rutas para Facturas
 Route::resource('facturas', FacturaController::class);
+Route::get('facturas/{factura}/pdf', [FacturaController::class, 'generatePdf'])->name('facturas.pdf');
 // Guardar, actualizar y eliminar
 Route::post('/personal/store', [PersonalController::class, 'store'])->name('personal.store');
 Route::put('/personal/update/{personal}', [PersonalController::class, 'update'])->name('personal.update');
@@ -121,6 +127,8 @@ Route::get('/vuelos', [VueloController::class, 'index'])->name('vuelos.index');
 // Mostrar formulario para crear
 Route::get('/vuelo/create', [VueloController::class, 'create'])->name('vuelo.create');
 Route::get('/vuelos/create', [VueloController::class, 'create'])->name('vuelos.create');
+// Vuelos Disponibles
+Route::get('/vuelos/disponibles', [VueloController::class, 'listarDisponibles'])->name('vuelos.disponibles');
 // Mostrar detalles
 Route::get('/vuelo/{vuelo}', [VueloController::class, 'show'])->name('vuelo.show');
 Route::resource('boletos', BoletoController::class);
@@ -136,6 +144,7 @@ Route::get('/vuelo/{vuelo}/edit', [VueloController::class, 'edit'])->name('vuelo
 Route::get('/vuelo/{vuelo}/delete', [VueloController::class, 'delete'])->name('vuelo.delete');
 // Guardar, actualizar y eliminar
 Route::post('/vuelo', [VueloController::class, 'store'])->name('vuelo.store');
+Route::post('/vuelos', [VueloController::class, 'store'])->name('vuelos.store');
 Route::put('/vuelo/{vuelo}', [VueloController::class, 'update'])->name('vuelo.update');
 Route::delete('/vuelo/{vuelo}', [VueloController::class, 'destroy'])->name('vuelo.destroy');
 
