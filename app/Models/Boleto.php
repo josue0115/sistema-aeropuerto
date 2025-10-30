@@ -14,7 +14,7 @@ class Boleto extends Model
 
     protected $fillable = [
         'idBoleto',
-        'idVuelo',
+        'IdVuelo',
         'idPasajero',
         'FechaCompra',
         'Precio',

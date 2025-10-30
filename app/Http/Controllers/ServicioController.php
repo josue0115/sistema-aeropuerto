@@ -69,11 +69,18 @@ class ServicioController extends Controller
 
         // Insertar cada servicio
         foreach ($servicios as $servicioData) {
+            // Obtener el costo del tipo de servicio
+            $tipoServicio = TipoServicio::find($servicioData['idTipoServicio']);
+            $costo = $tipoServicio ? $tipoServicio->Costo : 0;
+            $costoTotal = $costo * $servicioData['Cantidad'];
+
             $data = [
                 'idBoleto' => $idBoleto,
-                'idTipoServicio' => $servicioData['idTipoServicio'],
                 'Fecha' => $fecha,
+                'idTipoServicio' => $servicioData['idTipoServicio'],
+                'Costo' => $costo,
                 'Cantidad' => $servicioData['Cantidad'],
+                'costoTotal' => $costoTotal,
                 'Estado' => $estado,
             ];
 
@@ -135,7 +142,21 @@ class ServicioController extends Controller
             'Estado' => 'nullable|string|max:20',
         ]);
 
-        Servicio::actualizar($id, $request->all());
+        $data = $request->all();
+
+        // Si se actualiza idTipoServicio o Cantidad, recalcular Costo y costoTotal
+        if (isset($data['idTipoServicio']) || isset($data['Cantidad'])) {
+            $servicio = Servicio::find($id);
+            $tipoServicioId = $data['idTipoServicio'] ?? $servicio->idTipoServicio;
+            $cantidad = $data['Cantidad'] ?? $servicio->Cantidad;
+
+            $tipoServicio = TipoServicio::find($tipoServicioId);
+            $costo = $tipoServicio ? $tipoServicio->Costo : $servicio->Costo;
+            $data['Costo'] = $costo;
+            $data['costoTotal'] = $costo * $cantidad;
+        }
+
+        Servicio::actualizar($id, $data);
 
         return redirect()->route('servicios.index')->with('success', 'Servicio actualizado exitosamente.');
     }

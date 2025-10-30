@@ -14,51 +14,56 @@ class Vuelo extends Model
     protected $keyType = 'int';
 
     protected $fillable = [
+        'IdVuelo',
         'IdAvion',
-        'AeropuertoOrigen',
-        'AeropuertoDestino',
+        'IdAeropuertoOrigen',
+        'IdAeropuertoDestino',
         'FechaSalida',
         'FechaLlegada',
         'Precio',
         'Estado'
     ];
 
-    // Relación con Avion
+    public function getRouteKeyName()
+    {
+        return 'IdVuelo';
+    }
+
+    // Relaciones
     public function avion()
     {
-        return $this->belongsTo(Avion::class, 'idAvion', 'idAvion');
+        return $this->belongsTo(Avion::class, 'IdAvion', 'IdAvion');
     }
 
-    // Relación con Aeropuerto Origen
     public function aeropuertoOrigen()
     {
-        return $this->belongsTo(Aeropuerto::class, 'AeropuertoOrigen', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'IdAeropuertoOrigen', 'IdAeropuerto');
     }
 
-    // Relación con Aeropuerto Destino
     public function aeropuertoDestino()
     {
-        return $this->belongsTo(Aeropuerto::class, 'AeropuertoDestino', 'IdAeropuerto');
+        return $this->belongsTo(Aeropuerto::class, 'IdAeropuertoDestino', 'IdAeropuerto');
     }
 
+    // Método para listar vuelos con joins
     public static function listar()
     {
-        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')
+        return self::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
             ->select('vuelo.*')
-            ->selectRaw('aeropuerto_origen.Nombre as aeropuerto_origen_nombre')
-            ->selectRaw('aeropuerto_destino.Nombre as aeropuerto_destino_nombre')
-            ->leftJoin('aeropuerto as aeropuerto_origen', 'vuelo.idAeropuertoOrigen', '=', 'aeropuerto_origen.idAeropuerto')
-            ->leftJoin('aeropuerto as aeropuerto_destino', 'vuelo.idAeropuertoDestino', '=', 'aeropuerto_destino.idAeropuerto')
+            ->selectRaw('aeropuerto_origen.NombreAeropuerto as aeropuerto_origen_nombre')
+            ->selectRaw('aeropuerto_destino.NombreAeropuerto as aeropuerto_destino_nombre')
+            ->leftJoin('aeropuerto as aeropuerto_origen', 'vuelo.IdAeropuertoOrigen', '=', 'aeropuerto_origen.IdAeropuerto')
+            ->leftJoin('aeropuerto as aeropuerto_destino', 'vuelo.IdAeropuertoDestino', '=', 'aeropuerto_destino.IdAeropuerto')
             ->get()
             ->map(function ($vuelo) {
-                $vuelo->aeropuerto_origen_nombre = $vuelo->aeropuerto_origen_nombre ?? $vuelo->aeropuertoOrigen->Nombre ?? 'N/A';
-                $vuelo->aeropuerto_destino_nombre = $vuelo->aeropuerto_destino_nombre ?? $vuelo->aeropuertoDestino->Nombre ?? 'N/A';
+                $vuelo->aeropuerto_origen_nombre = $vuelo->aeropuerto_origen_nombre ?? $vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A';
+                $vuelo->aeropuerto_destino_nombre = $vuelo->aeropuerto_destino_nombre ?? $vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A';
                 return $vuelo;
             });
     }
 
     public static function obtenerPorId($id)
     {
-        return self::with('aeropuertoOrigen', 'aeropuertoDestino', 'avion')->find($id);
+        return self::with('avion', 'aeropuertoOrigen', 'aeropuertoDestino')->find($id);
     }
 }

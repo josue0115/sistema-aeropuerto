@@ -9,14 +9,19 @@ class Avion extends Model
 {
     use HasFactory;
 
-    protected $table = 'aviones';
-    protected $primaryKey = 'IdAvion';
-    public $incrementing = false; // porque es VARCHAR
-    protected $keyType = 'string';
+    protected $table = 'avion';
+    protected $primaryKey = 'idAvion';
+    public $incrementing = true; // porque es INT
+    protected $keyType = 'int';
+
+    public function getRouteKeyName()
+    {
+        return 'idAvion';
+    }
 
     protected $fillable = [
-        'IdAvion',
-        'IdAerolinea',
+        'idAvion',
+        'idAerolinea',
         'Placa',
         'Tipo',
         'Modelo',
@@ -27,11 +32,11 @@ class Avion extends Model
     // Relación con Aerolinea
     public function aerolinea()
     {
-        return $this->belongsTo(Aerolinea::class, 'IdAerolinea', 'IdAerolinea');
+        return $this->belongsTo(Aerolinea::class, 'idAerolinea', 'idAerolinea');
     }
 
     public static function listar()
     {
-        return self::with('aerolinea')->get();
+        return self::all();
     }
 }

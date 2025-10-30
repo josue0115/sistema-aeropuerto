@@ -89,7 +89,7 @@ class BoletoController extends Controller
             $totalActual = session('total_acumulado', 0);
             session(['total_acumulado' => $totalActual + $data['Total']]);
 
-            // Verificar si se presionó el botón "Siguiente: Servicios"
+            // Verificar si se presionó el botón "Finalizar Reserva"
             if ($request->input('action') === 'next') {
                 // Guardar el ID del boleto creado en la sesión
                 session(['boleto_creado' => $boletoId]);

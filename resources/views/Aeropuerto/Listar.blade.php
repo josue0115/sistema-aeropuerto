@@ -1,15 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Aeropuertos</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
-    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
-</head>
-<body>
+@extends('layouts.app')
+
+@section('page-title', 'Lista de Aeropuertos')
+
+@section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Lista de Aeropuertos</h1>
 
@@ -30,9 +23,13 @@
         </thead>
         <tbody>
             @foreach($aeropuertos as $aero)
+            {{-- ** SOLUCIÓN: Saltar o Ignorar si el objeto aeropuerto es nulo ** --}}
+        @if (is_null($aero))
+            @continue 
+        @endif
             <tr>
-                <td>{{ $aero->IdAeropuerto }}</td>
-                <td>{{ $aero->NombreAeropuerto }}</td>
+                <td>{{ $aero->idAeropuerto }}</td>
+                <td>{{ $aero->Nombre }}</td>
                 <td>{{ $aero->Pais }}</td>
                 <td>{{ $aero->Ciudad }}</td>
                 <td>{{ $aero->Estado }}</td>
@@ -46,10 +43,10 @@
         </tbody>
     </table>
 </div>
+@endsection
 
-<!-- Scripts -->
+@section('scripts')
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
 
@@ -58,5 +55,4 @@ $(document).ready(function() {
     $('#tablaAeropuertos').DataTable();
 });
 </script>
-</body>
-</html>
+@endsection

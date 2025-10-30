@@ -1,26 +1,25 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Nueva Reserva
-                        <a href="{{ route('reservas.index') }}" class="btn btn-secondary float-end">Volver</a>
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('reservas.store') }}" method="POST" id="reserva-form">
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-xl font-semibold text-gray-800">Crear Nueva Reserva</h4>
+            <a href="{{ route('reservas.index') }}" class="material-btn material-btn-secondary">Volver</a>
+        </div>
+
+        <div class="p-6">
+                    <form action="{{ route('reservas.store.cliente') }}" method="POST" id="reserva-form">
                         @csrf
 
                         <!-- ID Reserva oculto -->
                         <input type="hidden" id="idReserva" name="idReserva" value="">
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="idPasajero" class="form-label">Código Pasajero</label>
-                                <select class="form-control @error('idPasajero') is-invalid @enderror" id="idPasajero" name="idPasajero" required>
+                        {{-- Selección de Pasajero y Vuelo --}}
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="idPasajero" class="block text-sm font-medium text-gray-700 mb-1">Código Pasajero</label>
+                                <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('idPasajero') border-red-500 @enderror" id="idPasajero" name="idPasajero" required>
                                     <option value="">Seleccione un pasajero</option>
                                     @foreach($pasajeros as $pasajero)
                                         <option value="{{ $pasajero->idPasajero }}" {{ old('idPasajero') == $pasajero->idPasajero ? 'selected' : '' }}>
@@ -29,13 +28,13 @@
                                     @endforeach
                                 </select>
                                 @error('idPasajero')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="idVuelo" class="form-label">Código Vuelo</label>
-                                <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
+                            <div>
+                                <label for="idVuelo" class="block text-sm font-medium text-gray-700 mb-1">Código Vuelo</label>
+                                <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('idVuelo') border-red-500 @enderror" id="idVuelo" name="idVuelo" required>
                                     <option value="">Seleccione un vuelo</option>
                                     @foreach($vuelos as $vuelo)
                                         <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}" data-fecha-salida="{{ $vuelo->FechaSalida }}" {{ old('idVuelo') == $vuelo->idVuelo ? 'selected' : '' }}>
@@ -44,52 +43,50 @@
                                     @endforeach
                                 </select>
                                 @error('idVuelo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <!-- Historial de reservas del pasajero seleccionado -->
-                        <div id="historial-reservas" class="mb-3" style="display: none;">
-                            <div class="card">
-                                <div class="card-header">
-                                    <h6>Reservas Anteriores del Pasajero</h6>
-                                </div>
-                                <div class="card-body">
-                                    <div id="historial-content">
-                                        <!-- El historial se cargará aquí dinámicamente -->
-                                    </div>
+                        {{-- Historial de reservas del pasajero seleccionado --}}
+                        <div id="historial-reservas" class="mb-6" style="display: none;">
+                            <div class="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                                <h6 class="text-lg font-semibold text-gray-800 mb-3">Reservas Anteriores del Pasajero</h6>
+                                <div id="historial-content">
+                                    {{-- El historial se cargará aquí dinámicamente --}}
                                 </div>
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="FechaReserva" class="form-label">Fecha Reserva</label>
-                                <input type="datetime-local" class="form-control @error('FechaReserva') is-invalid @enderror" id="FechaReserva" name="FechaReserva" value="{{ old('FechaReserva', date('Y-m-d\TH:i')) }}" min="{{ date('Y-m-d\TH:i') }}" required>
+                        {{-- Fechas --}}
+                        <div class="grid md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="FechaReserva" class="block text-sm font-medium text-gray-700 mb-1">Fecha Reserva</label>
+                                <input type="datetime-local" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('FechaReserva') border-red-500 @enderror" id="FechaReserva" name="FechaReserva" value="{{ old('FechaReserva', date('Y-m-d\TH:i')) }}" min="{{ date('Y-m-d\TH:i') }}" required>
                                 @error('FechaReserva')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="FechaVuelo" class="form-label">Fecha Vuelo</label>
-                                <input type="datetime-local" class="form-control @error('FechaVuelo') is-invalid @enderror" id="FechaVuelo" name="FechaVuelo" value="{{ old('FechaVuelo') }}" min="{{ date('Y-m-d\TH:i') }}" required>
+                            <div>
+                                <label for="FechaVuelo" class="block text-sm font-medium text-gray-700 mb-1">Fecha Vuelo</label>
+                                <input type="datetime-local" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('FechaVuelo') border-red-500 @enderror" id="FechaVuelo" name="FechaVuelo" value="{{ old('FechaVuelo') }}" min="{{ date('Y-m-d\TH:i') }}" required>
                                 @error('FechaVuelo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="MontoAnticipado" class="form-label">Monto Anticipado</label>
-                                <input type="number" step="0.01" class="form-control" id="MontoAnticipado" name="MontoAnticipado" value="{{ old('MontoAnticipado') }}" readonly>
+                        {{-- Monto Anticipado y Estado --}}
+                        <div class="grid md:grid-cols-2 gap-6 mt-6">
+                            <div>
+                                <label for="MontoAnticipado" class="block text-sm font-medium text-gray-700 mb-1">Monto Anticipado</label>
+                                <input type="number" step="0.01" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100" id="MontoAnticipado" name="MontoAnticipado" value="{{ old('MontoAnticipado') }}" readonly>
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="Estado" class="form-label">Estado</label>
-                                <select class="form-control @error('Estado') is-invalid @enderror" id="Estado" name="Estado" required>
+                            <div>
+                                <label for="Estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                                <select class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none @error('Estado') border-red-500 @enderror" id="Estado" name="Estado" required>
                                     <option value="">Seleccione un estado</option>
                                     <option value="Activo" {{ old('Estado', 'Confirmado') == 'Activo' ? 'selected' : '' }}>Activo</option>
                                     <option value="Inactivo" {{ old('Estado', 'Confirmado') == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
@@ -98,19 +95,24 @@
                                     <option value="Cancelado" {{ old('Estado', 'Confirmado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
                                 </select>
                                 @error('Estado')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary">Crear Reserva</button>
-                        <a href="{{ route('reservas.index') }}" class="btn btn-secondary">Cancelar</a>
+                        {{-- Botones --}}
+                        <div class="flex flex-wrap gap-3 justify-end mt-8 pt-6 border-t border-gray-200">
+                            <button type="submit" class="material-btn material-btn-primary">Crear Reserva</button>
+                            <a href="{{ route('reservas.index') }}" class="material-btn material-btn-secondary">Cancelar</a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script src="//unpkg.com/alpinejs@3.x.x" defer></script>
 @endsection
 
 @section('scripts')

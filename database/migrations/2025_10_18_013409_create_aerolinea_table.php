@@ -12,7 +12,7 @@ return new class extends Migration
         $table->string('IdAerolinea', 20)->primary();
         $table->string('NombreAerolinea', 50);
         $table->string('Pais', 10)->nullable();
-        $table->string('Ciudad', 50)->nullable();
+        $table->string('Ciudad', 10)->nullable();
         $table->string('Estado', 10)->nullable();
         $table->timestamps();
     });

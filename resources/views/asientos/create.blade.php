@@ -1,375 +1,254 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container mt-0 pt-0">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Nuevo Asiento
-                        <a href="{{ route('asientos.index') }}" class="btn btn-secondary float-end">Volver</a>
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('asientos.store') }}" method="POST">
-                        @csrf
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="idVuelo">Número de Vuelo</label>
-                                    <div class="input-group">
-                                        <select name="idVuelo" id="idVuelo" class="form-control" required>
-                                            <option value="">Seleccione un vuelo</option>
-                                            @foreach($vuelos as $vuelo)
-                                                <option value="{{ $vuelo->idVuelo }}" {{ old('idVuelo') == $vuelo->idVuelo ? 'selected' : (isset($vueloSeleccionado) && $vueloSeleccionado == $vuelo->idVuelo ? 'selected' : '') }}>
-                                                    Vuelo {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuerto_origen_nombre ?? 'N/A' }} a {{ $vuelo->aeropuerto_destino_nombre ?? 'N/A' }}
-                                                </option>
-                                            @endforeach
-                                        </select>
-                                        <button type="button" class="btn btn-outline-secondary" id="selectSeatBtn">Seleccionar Asiento</button>
-                                    </div>
-                                    <small class="text-muted">Selecciona un vuelo y luego haz clic para elegir asiento</small>
-                                    @error('idVuelo')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="NumeroAsiento">Número de Asiento</label>
-                                    <input type="text" name="NumeroAsiento" id="NumeroAsiento" class="form-control" value="{{ old('NumeroAsiento') }}" required readonly>
-                                    @error('NumeroAsiento')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Clase">Clase</label>
-                                    <input type="text" name="Clase" id="Clase" class="form-control" value="{{ old('Clase') }}" readonly>
-                                    @error('Clase')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Estado">Estado</label>
-                                    <select name="Estado" id="Estado" class="form-control">
-                                        <option value="">Seleccione un estado</option>
-                                        <option value="Disponible" {{ old('Estado', 'Ocupado') == 'Disponible' ? 'selected' : '' }}>Disponible</option>
-                                        <option value="Reservado" {{ old('Estado', 'Ocupado') == 'Reservado' ? 'selected' : '' }}>Reservado</option>
-                                        <option value="Ocupado" {{ old('Estado', 'Ocupado') == 'Ocupado' ? 'selected' : '' }}>Ocupado</option>
-                                    </select>
-                                    @error('Estado')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" name="action" value="create" class="btn btn-primary">Crear Asiento</button>
-                        <button type="submit" name="action" value="finalize" class="btn btn-success">Finalizar Reserva</button>
-                        <a href="{{ route('asientos.index') }}" class="btn btn-secondary">Cancelar</a>
-                    </form>
-                </div>
-            </div>
+<div class="container mx-auto px-4 py-8">
+    <div class="bg-white shadow-md rounded-lg p-6 border border-gray-200">
+        <div class="flex items-center justify-between mb-4">
+            <h4 class="text-xl font-semibold text-gray-800">Crear Nuevo Asiento</h4>
+            <a href="{{ route('asientos.index') }}" class="material-btn material-btn-secondary">Volver</a>
         </div>
-    </div>
 
-    <!-- Navigation Buttons -->
-    <!-- <div class="container mt-4">
-        <div class="row">
-            <div class="col-12 text-center">
-                <a href="{{ route('servicios.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Servicios</a>
-                <a href="{{ route('reservas.create') }}" class="btn btn-success btn-lg">Finalizar Reserva</a>
-            </div>
-        </div>
-    </div> -->
+        <form action="{{ route('asientos.store') }}" method="POST" x-data="seatSelection" x-init="init()">
+            @csrf
 
-    <!-- Modal de Selección de Asientos -->
-                    <div class="modal fade" id="seatModal" tabindex="-1" aria-labelledby="seatModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
-                        <div class="modal-dialog modal-lg">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="seatModalLabel">Seleccionar Asiento</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body">
-                                    <div id="airplane-container">
-                                        <!-- El contenido del avión se cargará aquí -->
-                                    </div>
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
-                                    <button type="button" class="btn btn-primary" id="confirmSeat">Seleccionar Asiento</button>
-                                </div>
-                            </div>
-                        </div>
+            {{-- Selección de Vuelo --}}
+            <div class="grid md:grid-cols-2 gap-6">
+                <div>
+                    <label for="IdVuelo" class="block text-sm font-medium text-gray-700 mb-1">Número de Vuelo</label>
+                    <div class="flex gap-2">
+                        <select name="IdVuelo" id="IdVuelo" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none" required>
+                            <option value="">Seleccione un vuelo</option>
+                            @foreach($vuelos as $vuelo)
+                                <option value="{{ $vuelo->IdVuelo }}"
+                                    {{ old('IdVuelo') == $vuelo->IdVuelo ? 'selected' : (isset($vueloSeleccionado) && $vueloSeleccionado == $vuelo->IdVuelo ? 'selected' : '') }}>
+                                    Vuelo {{ $vuelo->IdVuelo }} - {{ $vuelo->aeropuerto_origen_nombre ?? 'N/A' }} a {{ $vuelo->aeropuerto_destino_nombre ?? 'N/A' }}
+                                </option>
+                            @endforeach
+                        </select>
+
+                        {{-- Botón para abrir el modal --}}
+                        <button type="button" @click="if (!document.getElementById('IdVuelo').value) { showError('Selecciona un vuelo primero') } else { loadSeats(); seatModal = true }" class="material-btn material-btn-secondary whitespace-nowrap">
+                            Seleccionar Asiento
+                        </button>
                     </div>
+                    <small class="text-gray-500">Selecciona un vuelo y luego haz clic para elegir asiento</small>
+                </div>
 
-                    <!-- Modal de Error -->
-                    <div class="modal fade" id="errorModal" tabindex="-1" aria-labelledby="errorModalLabel" aria-hidden="true">
-                        <div class="modal-dialog">
-                            <div class="modal-content">
-                                <div class="modal-header">
-                                    <h5 class="modal-title" id="errorModalLabel">Error</h5>
-                                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                                </div>
-                                <div class="modal-body" id="errorModalBody">
-                                    <!-- Error message will be inserted here -->
-                                </div>
-                                <div class="modal-footer">
-                                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal">Aceptar</button>
-                                </div>
-                            </div>
-                        </div>
+                <div>
+                    <label for="NumeroAsiento" class="block text-sm font-medium text-gray-700 mb-1">Número de Asiento</label>
+                    <input type="text" name="NumeroAsiento" id="NumeroAsiento" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100" value="{{ old('NumeroAsiento') }}" readonly required>
+                </div>
+            </div>
+
+            {{-- Clase / Estado --}}
+            <div class="grid md:grid-cols-2 gap-6 mt-6">
+                <div>
+                    <label for="Clase" class="block text-sm font-medium text-gray-700 mb-1">Clase</label>
+                    <input type="text" name="Clase" id="Clase" class="w-full border border-gray-300 rounded-md px-3 py-2 bg-gray-100" value="{{ old('Clase') }}" readonly>
+                </div>
+
+                <div>
+                    <label for="Estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                    <select name="Estado" id="Estado" class="w-full border border-gray-300 rounded-md px-3 py-2 focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                        <option value="">Seleccione un estado</option>
+                        <option value="Disponible" {{ old('Estado', 'Ocupado') == 'Disponible' ? 'selected' : '' }}>Disponible</option>
+                        <option value="Reservado" {{ old('Estado', 'Ocupado') == 'Reservado' ? 'selected' : '' }}>Reservado</option>
+                        <option value="Ocupado" {{ old('Estado', 'Ocupado') == 'Ocupado' ? 'selected' : '' }}>Ocupado</option>
+                    </select>
+                </div>
+            </div>
+
+            {{-- Botones --}}
+            <div class="flex flex-wrap gap-3 justify-end mt-8 pt-6 border-t border-gray-200">
+                <button type="submit" name="action" value="create" class="material-btn material-btn-primary">Crear Asiento</button>
+                <button type="submit" name="action" value="finalize" class="material-btn material-btn-success">Finalizar Reserva</button>
+                <a href="{{ route('asientos.index') }}" class="material-btn material-btn-secondary">Cancelar</a>
+            </div>
+
+            {{-- Modal Selección Asiento --}}
+            <div x-show="seatModal" x-cloak class="fixed inset-0 flex  justify-center bg-black/50 z-50">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-3xl p-6" style="width: 850px; height:900px;">
+                    <div class="flex items-center justify-between mb-4 border-b pb-2">
+                        <h5 class="text-lg font-semibold text-gray-700">Seleccionar Asiento</h5>
+                        <button @click="seatModal=false" class="material-btn material-btn-secondary text-sm">Cerrar</button>
+                    </div>
+                    <div id="airplane-container"   class="p-4 border border-gray-200 rounded bg-gray-50 text-center">
+                        <p class="text-gray-500">Cargando asientos...</p>
+                    </div>
+                    <div class="flex justify-end mt-6">
+                        <button type="button" @click="seatModal=false" class="material-btn material-btn-secondary mr-2">Cancelar</button>
+                        <button type="button" @click="confirmSeat()" class="material-btn material-btn-primary">Seleccionar Asiento</button>
+                    </div>
+                </div>
+            </div>
+
+            {{-- Modal de Error --}}
+            <div x-show="errorModal" x-cloak class="fixed inset-0 flex items-center justify-center bg-black/50 z-50">
+                <div class="bg-white rounded-lg shadow-lg w-full max-w-md p-6">
+                    <h5 class="text-lg font-semibold text-gray-700 mb-2">Error</h5>
+                    <p class="text-gray-600 mb-4" x-text="errorMessage"></p>
+                    <div class="flex justify-end">
+                        <button @click="errorModal=false" class="material-btn material-btn-primary">Aceptar</button>
+                    </div>
+                </div>
+            </div>
+
+        </form>
+    </div>
+</div>
+
+<script src="//unpkg.com/alpinejs@3.x.x" defer></script>
 @endsection
 
 @section('scripts')
 <script>
-document.addEventListener('DOMContentLoaded', function() {
-    console.log('JavaScript loaded for asientos create');
-    const numeroAsientoInput = document.getElementById('NumeroAsiento');
-    const selectSeatBtn = document.getElementById('selectSeatBtn');
-    const idVueloSelect = document.getElementById('idVuelo');
-    const airplaneContainer = document.getElementById('airplane-container');
-    const confirmSeatBtn = document.getElementById('confirmSeat');
-    const errorModalBody = document.getElementById('errorModalBody');
-    let selectedSeat = null;
-    let seatModal = null;
-    let errorModal = null;
+document.addEventListener('alpine:init', () => {
+    Alpine.data('seatSelection', () => ({
+        seatModal: false,
+        errorModal: false,
+        errorMessage: '',
+        selectedSeat: null,
 
-    // Initialize modals immediately when DOM is ready
-    const modalElement = document.getElementById('seatModal');
-    const errorModalElement = document.getElementById('errorModal');
-    if (modalElement) {
-        seatModal = new bootstrap.Modal(modalElement);
-        console.log('Seat modal initialized successfully');
-    } else {
-        console.error('Seat modal element not found');
-    }
+        init() {
+            console.log("✅ Alpine seatSelection iniciado correctamente");
+        },
 
-    if (errorModalElement) {
-        errorModal = new bootstrap.Modal(errorModalElement);
-        console.log('Error modal initialized successfully');
-    } else {
-        console.error('Error modal element not found');
-    }
+        showError(msg) {
+            this.errorMessage = msg;
+            this.errorModal = true;
+        },
 
-    // Function to show error modal
-    function showErrorModal(message) {
-        if (errorModal && errorModalBody) {
-            errorModalBody.textContent = message;
-            errorModal.show();
-        } else {
-            alert(message); // Fallback to alert if modal fails
-        }
-    }
+        async loadSeats() {
+            const vueloId = document.getElementById('IdVuelo').value;
+            const container = document.getElementById('airplane-container');
+            container.innerHTML = '<p class="text-gray-100">Cargando asientos...</p>';
 
-    // Hacer el botón de asiento clickeable
-    selectSeatBtn.addEventListener('click', function() {
-        console.log('Seat select button clicked');
-        const vueloId = idVueloSelect.value;
-        console.log('Selected vueloId:', vueloId);
-        if (!vueloId) {
-            showErrorModal('Por favor selecciona un vuelo primero.');
-            return;
-        }
-        if (seatModal) {
-            loadSeats(vueloId);
-            seatModal.show();
-        } else {
-            console.error('Seat modal not initialized');
-            showErrorModal('Error: Modal no inicializado');
-        }
-    });
+            try {
+                console.log('🔍 Cargando asientos para vuelo:', vueloId);
+                const response = await fetch(`/asientos/available-seats?idVuelo=${vueloId}`);
+                if (!response.ok) throw new Error(`Error HTTP: ${response.status}`);
+                const data = await response.json();
+                const available = data.available || [];
+                const occupied = data.occupied || [];
+                this.renderSeats(available, occupied);
+            } catch (error) {
+                console.error("❌ Error cargando asientos:", error);
+                container.innerHTML = `<p class="text-red-500 mb-2">Error al cargar los asientos.</p>
+                                       <p class="text-sm text-gray-500">Detalles: ${error.message}</p>`;
+            }
+        },
 
-    // Cargar asientos disponibles
-    function loadSeats(vueloId) {
-        console.log('Loading seats for vueloId:', vueloId);
-        fetch(`/asientos/available-seats?idVuelo=${vueloId}`)
-            .then(response => {
-                console.log('Response status:', response.status);
-                if (!response.ok) {
-                    throw new Error(`HTTP error! status: ${response.status}`);
-                }
-                return response.json();
-            })
-            .then(data => {
-                console.log('Received data:', data);
-                renderAirplane(data.available, data.occupied);
-            })
-            .catch(error => {
-                console.error('Error loading seats:', error);
-                airplaneContainer.innerHTML = '<p>Error al cargar los asientos. Verifica la consola para más detalles.</p>';
-            });
-    }
+        renderSeats(available, occupied) {
+            const container = document.getElementById('airplane-container');
+            const firstClass = ['1A', '1B', '1C', '1D'];
+            const businessClass = ['2A','2B','2C','2D','3A','3B','3C','3D'];
+            const economyClass = ['4A','4B','4C','4D','4E','4F','5A','5B','5C','5D','5E','5F','6A','6B','6C','6D','6E','6F'];
 
-    // Renderizar el avión
-    function renderAirplane(availableSeats, occupiedSeats) {
-        console.log('Rendering airplane with available:', availableSeats, 'occupied:', occupiedSeats);
-        airplaneContainer.innerHTML = `
-            <div class="airplane-container">
-                <div class="airplane">
-                    <!-- Cabina del piloto -->
-                    <div class="cockpit">
-                        <div class="cockpit-window"></div>
-                    </div>
-
-                    <!-- Primera clase -->
-                    <div class="first-class">
-                        <h6>Primera Clase</h6>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['1A', '1B'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['1C', '1D'], availableSeats, occupiedSeats)}
-                            </div>
+            container.innerHTML = `
+                <div class="airplane-wrapper" style="max-width: 500px; margin: 0 auto;">
+                    <div style="background-color: #007bff; border-radius: 50px 50px 0 0; height: 64px; display: flex; align-items: center; justify-content: center; margin-bottom: 16px; color: white; font-weight: bold; font-size: 18px;">✈️ CABINA</div>
+                    <div style="margin-bottom: 16px; padding: 16px; border-radius: 8px; border: 2px solid #ffc107; background-color: #fff3cd;">
+                        <h6 style="text-align: center; font-weight: bold; color: #664d03; margin-bottom: 12px; font-size: 16px;">✨ PRIMERA CLASE</h6>
+                        <div style="display: flex; justify-content: center; gap: 16px;">
+                            <div style="display: flex; gap: 8px;">${this.renderSeatRow(firstClass.slice(0,2), available, occupied, '#ffc107')}</div>
+                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;"><div style="height: 100%; width: 2px; background-color: #6c757d;"></div></div>
+                            <div style="display: flex; gap: 8px;">${this.renderSeatRow(firstClass.slice(2,4), available, occupied, '#ffc107')}</div>
                         </div>
                     </div>
-
-                    <!-- Clase ejecutiva -->
-                    <div class="business-class">
-                        <h6>Clase Ejecutiva</h6>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['2A', '2B'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['2C', '2D'], availableSeats, occupiedSeats)}
-                            </div>
-                        </div>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['3A', '3B'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['3C', '3D'], availableSeats, occupiedSeats)}
-                            </div>
-                        </div>
+                    <div style="margin-bottom: 16px; padding: 16px; border-radius: 8px; border: 2px solid #055160; background-color: #cff4fc;">
+                        <h6 style="text-align: center; font-weight: bold; color: #055160; margin-bottom: 12px; font-size: 16px;">💼 CLASE EJECUTIVA</h6>
+                        ${this.renderClassSection(businessClass, available, occupied, 4, '#055160')}
                     </div>
-
-                    <!-- Clase económica -->
-                    <div class="economy-class">
-                        <h6>Clase Económica</h6>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['4A', '4B', '4C'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['4D', '4E', '4F'], availableSeats, occupiedSeats)}
-                            </div>
+                    <div style="margin-bottom: 16px; padding: 16px; border-radius: 8px; border: 2px solid #198754; background-color: #d1edff;">
+                        <h6 style="text-align: center; font-weight: bold; color: #0f5132; margin-bottom: 12px; font-size: 16px;">🪑 CLASE ECONÓMICA</h6>
+                        ${this.renderClassSection(economyClass, available, occupied, 6, '#198754')}
+                    </div>
+                    <div style="background-color: #6c757d; border-radius: 0 0 8px 8px; height: 48px; display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 12px;">SALIDA DE EMERGENCIA</div>
+                    <div style="margin-top: 16px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 12px; font-size: 14px;">
+                        
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 32px; height: 32px; background-color: #007bff; border: 4px solid #007bff; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">S</div>
+                            <span style="color: #6c757d;">Seleccionado</span>
                         </div>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['5A', '5B', '5C'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['5D', '5E', '5F'], availableSeats, occupiedSeats)}
-                            </div>
-                        </div>
-                        <div class="seats-row">
-                            <div class="seat-group">
-                                ${renderSeatGroup(['6A', '6B', '6C'], availableSeats, occupiedSeats)}
-                            </div>
-                            <div class="aisle"></div>
-                            <div class="seat-group">
-                                ${renderSeatGroup(['6D', '6E', '6F'], availableSeats, occupiedSeats)}
-                            </div>
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <div style="width: 32px; height: 32px; background-color: #6c757d; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold;">O</div>
+                            <span style="color: #6c757d;">Ocupado</span>
                         </div>
                     </div>
                 </div>
-            </div>
-            <div class="mt-3">
-                <small class="text-muted">
-                    <span class="seat-legend available-legend"></span> Disponible
-                    <span class="seat-legend selected-legend"></span> Seleccionado
-                    <span class="seat-legend occupied-legend"></span> Ocupado
-                </small>
-            </div>
-        `;
+            `;
 
-        // Agregar event listeners a los asientos
-        document.querySelectorAll('.seat.available').forEach(seat => {
-            seat.addEventListener('click', function() {
-                console.log('Seat clicked:', this.dataset.seat);
-                // Remover selección previa
-                document.querySelectorAll('.seat').forEach(s => s.classList.remove('selected'));
-                // Seleccionar asiento actual
-                this.classList.add('selected');
-                selectedSeat = this.dataset.seat;
-            });
-        });
-    }
+            this.attachSeatListeners(container);
+        },
 
-    // Renderizar grupo de asientos
-    function renderSeatGroup(seats, availableSeats, occupiedSeats) {
-        return seats.map(seat => {
-            let seatClass = 'seat';
-            if (availableSeats.includes(seat)) {
-                seatClass += ' available';
-            } else if (occupiedSeats.includes(seat)) {
-                seatClass += ' occupied';
-            } else {
-                seatClass += ' available'; // Asientos no registrados se consideran disponibles
+        renderClassSection(seats, available, occupied, seatsPerRow, color) {
+            let html = '';
+            for (let i = 0; i < seats.length; i += seatsPerRow) {
+                const rowSeats = seats.slice(i, i + seatsPerRow);
+                const leftSeats = rowSeats.slice(0, seatsPerRow/2);
+                const rightSeats = rowSeats.slice(seatsPerRow/2);
+                html += `
+                    <div style="display: flex; justify-content: center; gap: 16px; margin-bottom: 8px;">
+                        <div style="display: flex; gap: 8px;">${this.renderSeatRow(leftSeats, available, occupied, color)}</div>
+                        <div style="width: 48px; display: flex; align-items: center; justify-content: center;"><div style="height: 100%; width: 2px; background-color: #6c757d;"></div></div>
+                        <div style="display: flex; gap: 8px;">${this.renderSeatRow(rightSeats, available, occupied, color)}</div>
+                    </div>
+                `;
             }
-            return `<div class="${seatClass}" data-seat="${seat}">${seat}</div>`;
-        }).join('');
-    }
+            return html;
+        },
 
-    // Función para obtener la clase basada en el número de asiento
-    function getSeatClass(seatNumber) {
-        const row = seatNumber.charAt(0);
-        if (row === '1') {
-            return 'Primera Clase';
-        } else if (row === '2' || row === '3') {
-            return 'Clase Ejecutiva';
-        } else if (row >= '4' && row <= '6') {
+        renderSeatRow(seats, available, occupied, color) {
+            return seats.map(seat => {
+                const isOccupied = occupied.includes(seat);
+                let style = 'border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px; font-weight: bold; width: 40px; height: 40px;';
+                if (isOccupied) {
+                    style += ' background-color: #6c757d; cursor: not-allowed; opacity: 0.75;';
+                } else {
+                    style += ` background-color: ${color}; cursor: pointer; transition: opacity 0.2s;`;
+                }
+                return `<div data-seat="${seat}" data-color="${color}" class="seat" style="${style}">${seat}</div>`;
+            }).join('');
+        },
+
+        attachSeatListeners(container) {
+            const seats = container.querySelectorAll('.seat');
+            seats.forEach(seat => {
+                if (seat.style.cursor === 'not-allowed') return;
+                seat.addEventListener('click', () => {
+                    container.querySelectorAll('.seat').forEach(s => {
+                        s.style.border = '';
+                        if (s.style.cursor !== 'not-allowed') {
+                            const originalColor = s.dataset.color;
+                            s.style.backgroundColor = originalColor;
+                        }
+                    });
+                    const originalColor = seat.dataset.color;
+                    seat.style.backgroundColor = '#007bff';
+                    seat.style.border = '4px solid #007bff';
+                    this.selectedSeat = seat.dataset.seat;
+                });
+            });
+        },
+
+        confirmSeat() {
+            if (!this.selectedSeat) {
+                this.showError('Por favor selecciona un asiento.');
+                return;
+            }
+            document.getElementById('NumeroAsiento').value = this.selectedSeat;
+            document.getElementById('Clase').value = this.getSeatClass(this.selectedSeat);
+            this.seatModal = false;
+        },
+
+        getSeatClass(seat) {
+            const row = seat.charAt(0);
+            if (row === '1') return 'Primera Clase';
+            if (['2','3'].includes(row)) return 'Clase Ejecutiva';
             return 'Clase Económica';
         }
-        return '';
-    }
 
-    // Confirmar selección de asiento
-    confirmSeatBtn.addEventListener('click', function() {
-        console.log('Confirm seat clicked, selectedSeat:', selectedSeat);
-        if (selectedSeat) {
-            numeroAsientoInput.value = selectedSeat;
-            const seatClass = getSeatClass(selectedSeat);
-            document.getElementById('Clase').value = seatClass;
-            if (seatModal) {
-                seatModal.hide();
-            }
-        } else {
-            showErrorModal('Por favor selecciona un asiento.');
-        }
-    });
-
-    // Limpiar selección cuando se cambia el vuelo
-    idVueloSelect.addEventListener('change', function() {
-        numeroAsientoInput.value = '';
-        document.getElementById('Clase').value = '';
-        selectedSeat = null;
-    });
-
-    // Preseleccionar vuelo si viene de la sesión
-    const vueloSeleccionado = @json($vueloSeleccionado ?? null);
-    if (vueloSeleccionado && !idVueloSelect.value) {
-        idVueloSelect.value = vueloSeleccionado;
-    }
-});
+    }))
+})
 </script>
 @endsection

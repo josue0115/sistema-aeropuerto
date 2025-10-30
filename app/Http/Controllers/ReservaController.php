@@ -29,20 +29,21 @@ class ReservaController extends Controller
 
         // Obtener reservas existentes para sugerir vuelos basados en pasajeros
         $reservasExistentes = DB::select('
-            SELECT r.idPasajero, r.idVuelo, p.Nombre, p.Apellido, v.idVuelo as vuelo_id, v.Precio, v.FechaSalida,
-                   a_origen.Nombre as origen, a_destino.Nombre as destino
+            SELECT r.idPasajero, r.idVuelo, p.Nombre, p.Apellido, v.IdVuelo as vuelo_id, v.Precio, v.FechaSalida,
+                   a_origen.NombreAeropuerto as origen, a_destino.NombreAeropuerto as destino
             FROM reservas r
             JOIN pasajeros p ON r.idPasajero = p.idPasajero
             JOIN vuelo v ON r.idVuelo = v.idVuelo
-            LEFT JOIN aeropuertos a_origen ON v.idAeropuertoOrigen = a_origen.idAeropuerto
-            LEFT JOIN aeropuertos a_destino ON v.idAeropuertoDestino = a_destino.idAeropuerto
+            LEFT JOIN aeropuerto a_origen ON v.IdAeropuertoOrigen = a_origen.IdAeropuerto
+            LEFT JOIN aeropuerto a_destino ON v.IdAeropuertoDestino = a_destino.IdAeropuerto
             ORDER BY r.FechaReserva DESC
         ');
 
         // Calcular total acumulado de la reserva actual (si existe en sesión)
         $totalAcumulado = session('total_acumulado', 0);
 
-        // No sumar el precio del vuelo aquí porque ya está incluido en el boleto
+        // Sumar el MontoAnticipado al total acumulado para mostrar el total de la reserva
+        $totalReserva = $totalAcumulado;
 
         // Obtener valores de sesión para pre-llenar campos
         $pasajeroSeleccionado = session('pasajero_seleccionado');
@@ -57,7 +58,7 @@ class ReservaController extends Controller
 
         $vueloSeleccionado = session('vuelo_seleccionado');
 
-        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes', 'totalAcumulado', 'pasajeroSeleccionado', 'vueloSeleccionado'));
+        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes', 'totalAcumulado', 'totalReserva', 'pasajeroSeleccionado', 'vueloSeleccionado'));
     }
 
     /**
@@ -80,6 +81,11 @@ class ReservaController extends Controller
         if ($vuelo) {
             $data['MontoAnticipado'] = $vuelo->Precio * 0.10;
         }
+
+        // Sumar el MontoAnticipado al total acumulado de la reserva
+        $totalAcumulado = session('total_acumulado', 0);
+        $totalAcumulado += $data['MontoAnticipado'];
+        session(['total_acumulado' => $totalAcumulado]);
 
         // Generar ID automático para la reserva
         $data['idReserva'] = DB::select('SELECT COALESCE(MAX(idReserva), 0) + 1 as next_id FROM reservas')[0]->next_id;

@@ -12,11 +12,12 @@ class Servicio extends Model
     public $timestamps = false;
 
     protected $fillable = [
-        'idServicio',
         'idBoleto',
-        'idTipoServicio',
         'Fecha',
+        'idTipoServicio',
+        'Costo',
         'Cantidad',
+        'costoTotal',
         'Estado'
     ];
 
@@ -27,7 +28,8 @@ class Servicio extends Model
     protected $casts = [
         'Fecha' => 'datetime',
         'Cantidad' => 'decimal:2',
-        'CostoTotal' => 'decimal:2'
+        'Costo' => 'decimal:2',
+        'costoTotal' => 'decimal:2'
     ];
 
     public function boleto()
@@ -59,26 +61,18 @@ class Servicio extends Model
     // Crear nuevo servicio
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Servicio(?, ?, ?, ?, ?)', [
-            $data['idBoleto'],
-            $data['idTipoServicio'],
-            $data['Fecha'],
-            $data['Cantidad'],
-            $data['Estado']
-        ]);
+        return self::create($data);
     }
 
     // Actualizar servicio
     public static function actualizar($id, $data)
     {
-        return DB::select('CALL Sp_Actualizar_Servicio(?, ?, ?, ?, ?, ?)', [
-            $id,
-            $data['idBoleto'],
-            $data['idTipoServicio'],
-            $data['Fecha'],
-            $data['Cantidad'],
-            $data['Estado']
-        ]);
+        $servicio = self::find($id);
+        if ($servicio) {
+            $servicio->update($data);
+            return $servicio;
+        }
+        return null;
     }
 
     // Eliminar servicio

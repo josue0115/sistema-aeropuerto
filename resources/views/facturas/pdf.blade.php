@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Factura #{{ $factura['idFactura'] ?? 'N/A' }}</title>
-    
+
     <!-- Fuente compatible con PDF -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
     <style>
@@ -18,54 +18,54 @@
         /* Contenedor principal y estilos de fondo */
         body {
             /* Usamos DejaVu Sans para asegurar compatibilidad con Dompdf */
-            font-family: 'DejaVu Sans', sans-serif; 
+            font-family: 'DejaVu Sans', sans-serif;
             background-color: var(--bg-light);
             display: flex;
             justify-content: center;
-            padding: 0; 
+            padding: 0;
             color: #333;
-            margin: 0; 
-            width: 100%; 
+            margin: 0;
+            width: 100%;
         }
 
         .receipt-container {
             width: 100%;
             background-color: white;
-            border-radius: 0; 
-            box-shadow: none; 
-            padding: 1rem 0.5rem; 
-            border-top: 5px solid var(--secondary-teal); 
-            margin: 0 auto; 
+            border-radius: 0;
+            box-shadow: none;
+            padding: 1rem 0.5rem;
+            border-top: 5px solid var(--secondary-teal);
+            margin: 0 auto;
         }
-        
+
         /* ENCABEZADO */
         .header {
             text-align: center;
-            margin-bottom: 1.5rem; 
+            margin-bottom: 1.5rem;
         }
         .header h1 {
             color: var(--primary-blue);
             margin: 0;
-            font-size: 2rem; 
-            font-weight: 800; 
-            letter-spacing: 0.05em; 
+            font-size: 2rem;
+            font-weight: 800;
+            letter-spacing: 0.05em;
         }
         .header .subtitle {
-            font-size: 1.25rem; 
-            font-weight: 600; 
+            font-size: 1.25rem;
+            font-weight: 600;
             color: var(--primary-blue);
             margin-bottom: 0.25rem;
         }
         .header .date-text {
-            font-size: 0.875rem; 
-            color: #6B7280; 
+            font-size: 0.875rem;
+            color: #6B7280;
         }
 
         /* SECCIÓN */
         .section {
-            margin-bottom: 1rem; 
-            padding-top: 0.75rem; 
-            border-top: 1px solid #E5E7EB; 
+            margin-bottom: 1rem;
+            padding-top: 0.75rem;
+            border-top: 1px solid #E5E7EB;
         }
         .section:first-of-type {
             border-top: none;
@@ -95,16 +95,16 @@
 
         .details .row .label {
             display: table-cell;
-            font-weight: 500; 
-            color: #4B5563; 
-            width: 35%; 
+            font-weight: 500;
+            color: #4B5563;
+            width: 35%;
             padding: 0.3rem 0;
             border-bottom: 1px dashed #E5E7EB;
         }
 
         .details .row .value {
             display: table-cell;
-            color: #1F2937; 
+            color: #1F2937;
             padding: 0.3rem 0;
             border-bottom: 1px dashed #E5E7EB;
             font-weight: 400;
@@ -150,16 +150,16 @@
         }
         .total-row .value {
             color: var(--secondary-teal);
-            font-size: 2rem; 
+            font-size: 2rem;
         }
 
         .footer {
             text-align: center;
-            margin-top: 1.5rem; 
+            margin-top: 1.5rem;
             padding-top: 0.75rem;
             border-top: 1px solid #E5E7EB;
-            font-size: 0.75rem; 
-            color: #6B7280; 
+            font-size: 0.75rem;
+            color: #6B7280;
         }
         .footer p { margin: 0; line-height: 1.5; }
 
@@ -216,7 +216,14 @@
                 </div>
                 <div class="row">
                     <div class="label">Ruta:</div>
-                    <div class="value">{{ $vuelo->aeropuerto_origen ?? 'N/A' }} → {{ $vuelo->aeropuerto_destino ?? 'N/A' }}</div>
+                </div>
+                <div class="row">
+                    <div class="label">Origen:</div>
+                    <div class="value">{{ $vuelo->aeropuerto_origen ?? 'N/A' }} </div>
+                </div>
+                <div class="row">
+                    <div class="label">Destino:</div>
+                    <div class="value">{{ $vuelo->aeropuerto_destino ?? 'N/A' }}</div>
                 </div>
                 <div class="row">
                     <div class="label">Fecha y Hora de Vuelo:</div>
@@ -264,6 +271,17 @@
                         <td>${{ number_format($servicio->CostoTotal ?? 0, 2) }}</td>
                     </tr>
                     @endforeach
+
+                    @if(isset($equipajes) && $equipajes)
+                        @foreach($equipajes as $equipaje)
+                        <tr>
+                            <td>Equipaje ({{ $equipaje->Dimensiones ?? 'N/A' }} - {{ $equipaje->Peso ?? 0 }}kg)</td>
+                            <td>1</td>
+                            <td>${{ number_format($equipaje->Costo ?? 0, 2) }}</td>
+                            <td>${{ number_format($equipaje->Monto ?? 0, 2) }}</td>
+                        </tr>
+                        @endforeach
+                    @endif
                 </tbody>
             </table>
             @endif

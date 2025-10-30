@@ -106,7 +106,7 @@ class FacturaController extends Controller
     {
         $id = is_object($factura) ? $factura->idFactura : $factura;
 
-       
+
         $facturaData = Factura::obtenerPorId($id);
         if (empty($facturaData)) {
             abort(404);
@@ -120,6 +120,7 @@ class FacturaController extends Controller
         $vuelo = null;
         $servicios = [];
         $asiento = null;
+        $equipajes = [];
 
         if ($factura['idBoleto']) {
             // Obtener boleto
@@ -135,11 +136,11 @@ class FacturaController extends Controller
 
                 // Obtener vuelo
                 $vueloData = DB::select('
-                    SELECT v.*, ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+                    SELECT v.*, ao.NombreAeropuerto as aeropuerto_origen, ad.NombreAeropuerto as aeropuerto_destino
                     FROM vuelo v
-                    LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
-                    LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
-                    WHERE v.idVuelo = ?
+                    LEFT JOIN aeropuerto ao ON v.IdAeropuertoOrigen = ao.IdAeropuerto
+                    LEFT JOIN aeropuerto ad ON v.IdAeropuertoDestino = ad.IdAeropuerto
+                    WHERE v.IdVuelo = ?
                 ', [$boleto->idVuelo]);
 
                 if (!empty($vueloData)) {
@@ -156,12 +157,12 @@ class FacturaController extends Controller
 
                 // Obtener asiento (último del vuelo del boleto)
                 $asientos = DB::select('
-                    SELECT a.*, v.idVuelo, v.Precio as precio_vuelo,
-                           ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+                    SELECT a.*, v.IdVuelo, v.Precio as precio_vuelo,
+                           ao.NombreAeropuerto as aeropuerto_origen, ad.NombreAeropuerto as aeropuerto_destino
                     FROM asientos a
-                    JOIN vuelo v ON a.idVuelo = v.idVuelo
-                    LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
-                    LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
+                    JOIN vuelo v ON a.idVuelo = v.IdVuelo
+                    LEFT JOIN aeropuerto ao ON v.IdAeropuertoOrigen = ao.IdAeropuerto
+                    LEFT JOIN aeropuerto ad ON v.IdAeropuertoDestino = ad.IdAeropuerto
                     WHERE a.idVuelo = ?
                     ORDER BY a.idAsiento DESC LIMIT 1
                 ', [$boleto->idVuelo]);
@@ -169,6 +170,13 @@ class FacturaController extends Controller
                 if (!empty($asientos)) {
                     $asiento = $asientos[0];
                 }
+
+                // Obtener equipajes del boleto
+                $equipajes = DB::select('
+                    SELECT e.*, (e.Costo + e.CostoExtra) as Monto
+                    FROM equipajes e
+                    WHERE e.idBoleto = ?
+                ', [$boleto->idBoleto]);
             }
         }
 
@@ -179,6 +187,7 @@ class FacturaController extends Controller
             'vuelo' => $vuelo,
             'servicios' => $servicios,
             'asiento' => $asiento,
+            'equipajes' => $equipajes,
         ];
 
         $pdf = Pdf::loadView('facturas.pdf', $data);

@@ -23,8 +23,17 @@ class EquipajeController extends Controller
      */
     public function create()
     {
+        // Obtener boleto creado en el paso anterior
+        $boletoCreado = null;
+        if (session()->has('boleto_creado')) {
+            $boletoCreado = Boleto::obtenerPorId(session('boleto_creado'));
+            if (!empty($boletoCreado)) {
+                $boletoCreado = $boletoCreado[0];
+            }
+        }
+
         $boletos = Boleto::listar();
-        return view('equipajes.create', compact('boletos'));
+        return view('equipajes.create', compact('boletos', 'boletoCreado'));
     }
 
     /**
@@ -53,6 +62,17 @@ class EquipajeController extends Controller
         $data['idEquipaje'] = DB::select('SELECT COALESCE(MAX(idEquipaje), 0) + 1 as next_id FROM equipajes')[0]->next_id;
 
         Equipaje::insertar($data);
+
+        // Agregar el monto del equipaje al total acumulado de la reserva
+        $totalAcumulado = session('total_acumulado', 0);
+        $totalAcumulado += $data['Monto'];
+        session(['total_acumulado' => $totalAcumulado]);
+
+        // Verificar si se presionó el botón "Siguiente: Servicios"
+        if ($request->input('action') === 'next') {
+            // Redirigir a servicios
+            return redirect()->route('servicios.create')->with('success', 'Equipaje registrado exitosamente. Ahora selecciona los servicios adicionales.');
+        }
 
         return redirect()->route('equipajes.index')->with('success', 'Equipaje creado exitosamente.');
     }

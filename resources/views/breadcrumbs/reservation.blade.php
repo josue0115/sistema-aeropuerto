@@ -1,4 +1,4 @@
-@if(request()->routeIs(['vuelos.create', 'vuelos.disponibles', 'reservas.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create']))
+@if(request()->routeIs(['vuelos.disponibles', 'reservas.create', 'pasajeros.create', 'boletos.create', 'equipajes.create', 'servicios.create', 'asientos.create', 'pagos.create']))
     <nav class="checkout-steps" style="position: relative;">
        @if(session()->has('total_acumulado'))
             <div class="absolute top-3 right-3 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg">
@@ -7,25 +7,23 @@
             </div>
         @endif
         <div class="container">
-            
+
             @php
-                $steps = ['Vuelos', 'Pasajeros', 'Boletos', 'Servicios', 'Asientos', 'Reservas', 'Pago'];
-                $routes = ['vuelos.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create', 'reservas.create'];
+                $steps = ['Vuelos', 'Pasajeros', 'Boletos', 'Equipajes', 'Servicios', 'Asientos', 'Reservas', 'Pago'];
+                $routes = ['vuelos.disponibles', 'pasajeros.create', 'boletos.create', 'equipajes.create', 'servicios.create', 'asientos.create', 'reservas.create', 'pagos.create'];
                 $currentRoute = request()->route()->getName();
-                if ($currentRoute == 'vuelos.disponibles') {
-                    $currentRoute = 'vuelos.create';
-                }
+                // No need to change currentRoute since it's now 'vuelos.disponibles'
                 $currentStepIndex = array_search($currentRoute, $routes);
                 $progressPercentage = (($currentStepIndex + 1) / count($steps)) * 100;
             @endphp
-              
+
             <!-- Barra de progreso -->
-              
+
             <div class="progress-bar-container">
                 <div class="progress-bar-fill" style="width: {{ $progressPercentage }}%"></div>
                 <div class="progress-text">{{ intval($progressPercentage) }}% Completado</div>
             </div>
-         
+
             <ul class="steps">
                 @foreach($steps as $index => $step)
                     @php $stepNumber = $index + 1; @endphp
@@ -37,12 +35,12 @@
                         <li class="step-line {{ $stepNumber < $currentStepIndex + 1 ? 'completed' : '' }}"></li>
                     @endif
                 @endforeach
-               
+
             </ul>
-              
-           
+
+
         </div>
-         
+
     </nav>
 @endif
 

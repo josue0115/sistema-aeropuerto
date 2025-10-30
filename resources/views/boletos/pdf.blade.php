@@ -290,7 +290,7 @@
             <div class="details">
                 <div class="row">
                     <div class="label">ID Vuelo:</div>
-                    <div class="value">{{ $vuelo->idVuelo }}</div>
+                    <div class="value">{{ $vuelo->IdVuelo }}</div>
                 </div>
                 <div class="row">
                     <div class="label">Avión:</div>
@@ -298,11 +298,11 @@
                 </div>
                 <div class="row">
                     <div class="label">Origen:</div>
-                    <div class="value">{{ $vuelo->aeropuertoOrigen->Nombre ?? 'N/A' }} ({{ $vuelo->aeropuertoOrigen->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoOrigen->Pais ?? 'N/A' }})</div>
+                    <div class="value">{{ $vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} ({{ $vuelo->aeropuertoOrigen->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoOrigen->Pais ?? 'N/A' }})</div>
                 </div>
                 <div class="row">
                     <div class="label">Destino:</div>
-                    <div class="value">{{ $vuelo->aeropuertoDestino->Nombre ?? 'N/A' }} ({{ $vuelo->aeropuertoDestino->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoDestino->Pais ?? 'N/A' }})</div>
+                    <div class="value">{{ $vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }} ({{ $vuelo->aeropuertoDestino->Ciudad ?? 'N/A' }}, {{ $vuelo->aeropuertoDestino->Pais ?? 'N/A' }})</div>
                 </div>
                 <div class="row">
                     <div class="label">Salida (Fecha/Hora):</div>

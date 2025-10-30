@@ -1,160 +1,158 @@
 @extends('layouts.app')
 
+@section('page-title', 'Crear Vuelo - Sistema Aeropuerto')
+
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Nuevo Vuelo</h4>
+<div class="max-w-4xl mx-auto">
+    <div class="material-card">
+        <div class="p-6 border-b border-gray-200">
+            <h1 class="text-2xl font-semibold text-gray-800">
+                <i class="material-icons text-blue-600 mr-2">flight_takeoff</i>
+                Crear Nuevo Vuelo
+            </h1>
+            <p class="text-gray-600 mt-1">Complete la información para agregar un nuevo vuelo al sistema</p>
+        </div>
+
+        <div class="p-6">
+            <form method="POST" action="{{ route('vuelos.store') }}" class="space-y-6">
+                @csrf
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="idAvion" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">flight</i>
+                            Código Avión
+                        </label>
+                        <select name="idAvion" id="idAvion" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Seleccionar Avión</option>
+                            @foreach($aviones as $avion)
+                                <option value="{{ $avion->idAvion }}" {{ old('idAvion') == $avion->idAvion ? 'selected' : '' }}>
+                                    {{ $avion->idAvion }} - {{ $avion->Placa }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('idAvion')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="idAeropuertoOrigen" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">flight_takeoff</i>
+                            Aeropuerto Origen
+                        </label>
+                        <select name="idAeropuertoOrigen" id="idAeropuertoOrigen" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Seleccionar Aeropuerto Origen</option>
+                            @foreach($aeropuertos as $aeropuerto)
+                                <option value="{{ $aeropuerto->IdAeropuerto }}" {{ (isset($busquedaData) && $busquedaData['origen'] == $aeropuerto->IdAeropuerto) || old('idAeropuertoOrigen') == $aeropuerto->idAeropuerto ? 'selected' : '' }}>
+                                    {{ $aeropuerto->idAeropuerto }} - {{ $aeropuerto->Nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('idAeropuertoOrigen')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="idAeropuertoDestino" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">flight_land</i>
+                            Aeropuerto Destino
+                        </label>
+                        <select name="idAeropuertoDestino" id="idAeropuertoDestino" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="">Seleccionar Aeropuerto Destino</option>
+                            @foreach($aeropuertos as $aeropuerto)
+                                <option value="{{ $aeropuerto->IdAeropuerto }}" {{ (isset($busquedaData) && $busquedaData['destino'] == $aeropuerto->IdAeropuerto) || old('idAeropuertoDestino') == $aeropuerto->IdAeropuerto ? 'selected' : '' }}>
+                                    {{ $aeropuerto->idAeropuerto }} - {{ $aeropuerto->Nombre }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('idAeropuertoDestino')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="FechaSalida" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">schedule</i>
+                            Fecha Salida
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="FechaSalida"
+                            id="FechaSalida"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value="{{ isset($busquedaData) ? date('Y-m-d\TH:i', strtotime($busquedaData['fecha_ida'])) : old('FechaSalida') }}"
+                            required
+                            min="{{ date('Y-m-d\TH:i') }}"
+                        >
+                        @error('FechaSalida')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="FechaLlegada" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">schedule</i>
+                            Fecha Llegada
+                        </label>
+                        <input
+                            type="datetime-local"
+                            name="FechaLlegada"
+                            id="FechaLlegada"
+                            class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            value="{{ isset($busquedaData) && isset($busquedaData['fecha_vuelta']) ? date('Y-m-d\TH:i', strtotime($busquedaData['fecha_vuelta'])) : old('FechaLlegada') }}"
+                            {{ isset($busquedaData) && isset($busquedaData['fecha_vuelta']) ? 'required' : '' }}
+                            min="{{ date('Y-m-d\TH:i') }}"
+                        >
+                        @error('FechaLlegada')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Precio" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">attach_money</i>
+                            Precio
+                        </label>
+                        <input type="number" step="0.01" name="Precio" id="Precio" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" value="{{ isset($precioSugerido) ? $precioSugerido : old('Precio') }}" required readonly>
+                        @if(isset($precioSugerido))
+                            <small class="form-text text-muted">Precio sugerido basado en vuelos existentes para esta ruta</small>
+                        @endif
+                        @error('Precio')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Estado" class="block text-sm font-medium text-gray-700 mb-2">
+                            <i class="material-icons text-sm mr-1">toggle_on</i>
+                            Estado
+                        </label>
+                        <select name="Estado" id="Estado" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500" required>
+                            <option value="Programado" {{ old('Estado', 'Programado') == 'Programado' ? 'selected' : '' }}>Programado</option>
+                            <option value="EnVuelo" {{ old('Estado') == 'EnVuelo' ? 'selected' : '' }}>En Vuelo</option>
+                            <option value="Llegado" {{ old('Estado') == 'Llegado' ? 'selected' : '' }}>Llegado</option>
+                            <option value="Retrasado" {{ old('Estado') == 'Retrasado' ? 'selected' : '' }}>Retrasado</option>
+                            <option value="Cancelado" {{ old('Estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
+                        </select>
+                        @error('Estado')
+                            <p class="mt-1 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form action="{{ route('vuelos.store') }}" method="POST">
-                        @csrf
 
-                        <div class="row">
-                            <!-- <div class="col-md-6" style="display: none;">
-                                <div class="form-group mb-3">
-                                    <label for="idVuelo">ID Vuelo</label>
-                                    <input type="number" name="idVuelo" id="idVuelo" class="form-control" value="{{ old('idVuelo') }}" required>
-                                    <small class="form-text text-muted">ID generado automáticamente</small>
-                                    @error('idVuelo')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div> -->
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="idAvion">Avión</label>
-                                    <select name="idAvion" id="idAvion" class="form-control" required>
-                                        <option value="">Seleccionar Avión</option>
-                                        @foreach($aviones as $avion)
-                                            <option value="{{ $avion->idAvion }}" {{ old('idAvion') == $avion->idAvion ? 'selected' : '' }}>
-                                                {{ $avion->Modelo }} ({{ $avion->Matricula }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('idAvion')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="idAeropuertoOrigen">Aeropuerto Origen</label>
-                                    <select name="idAeropuertoOrigen" id="idAeropuertoOrigen" class="form-control" required>
-                                        <option value="">Seleccionar Aeropuerto Origen</option>
-                                        @foreach($aeropuertos as $aeropuerto)
-                                            <option value="{{ $aeropuerto->idAeropuerto }}" {{ (isset($busquedaData) && $busquedaData['origen'] == $aeropuerto->idAeropuerto) || old('idAeropuertoOrigen') == $aeropuerto->idAeropuerto ? 'selected' : '' }}>
-                                                {{ $aeropuerto->Nombre }} ({{ $aeropuerto->Ciudad }}, {{ $aeropuerto->Pais }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('idAeropuertoOrigen')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="idAeropuertoDestino">Aeropuerto Destino</label>
-                                    <select name="idAeropuertoDestino" id="idAeropuertoDestino" class="form-control" required>
-                                        <option value="">Seleccionar Aeropuerto Destino</option>
-                                        @foreach($aeropuertos as $aeropuerto)
-                                            <option value="{{ $aeropuerto->idAeropuerto }}" {{ (isset($busquedaData) && $busquedaData['destino'] == $aeropuerto->idAeropuerto) || old('idAeropuertoDestino') == $aeropuerto->idAeropuerto ? 'selected' : '' }}>
-                                                {{ $aeropuerto->Nombre }} ({{ $aeropuerto->Ciudad }}, {{ $aeropuerto->Pais }})
-                                            </option>
-                                        @endforeach
-                                    </select>
-                                    @error('idAeropuertoDestino')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                           <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="FechaSalida">Fecha Salida</label>
-                                    <input 
-                                        type="datetime-local" 
-                                        name="FechaSalida" 
-                                        id="FechaSalida" 
-                                        class="form-control" 
-                                        value="{{ isset($busquedaData) ? date('Y-m-d\TH:i', strtotime($busquedaData['fecha_ida'])) : old('FechaSalida') }}" 
-                                        required
-                                        min="{{ date('Y-m-d\TH:i') }}"
-                                    >
-                                    @error('FechaSalida')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6" id="fecha_llegada_container" style="{{ isset($busquedaData) && isset($busquedaData['fecha_vuelta']) ? '' : '' }}">
-                                <div class="form-group mb-3">
-                                    <label for="FechaLlegada">Fecha Llegada</label>
-                                    <input 
-                                        type="datetime-local" 
-                                        name="FechaLlegada" 
-                                        id="FechaLlegada" 
-                                        class="form-control" 
-                                        value="{{ isset($busquedaData) && isset($busquedaData['fecha_vuelta']) ? date('Y-m-d\TH:i', strtotime($busquedaData['fecha_vuelta'])) : old('FechaLlegada') }}" 
-                                        {{ isset($busquedaData) && isset($busquedaData['fecha_vuelta']) ? 'required' : '' }}
-                                        min="{{ date('Y-m-d\TH:i') }}"
-                                    >
-                                    @error('FechaLlegada')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Precio">Precio</label>
-                                    <input type="number" step="0.01" name="Precio" id="Precio" class="form-control" value="{{ isset($precioSugerido) ? $precioSugerido : old('Precio') }}" required>
-                                    @if(isset($precioSugerido))
-                                        <small class="form-text text-muted">Precio sugerido basado en vuelos existentes para esta ruta</small>
-                                    @endif
-                                    @error('Precio')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-
-                            <div class="col-md-6">
-                                <div class="form-group mb-3">
-                                    <label for="Estado">Estado</label>
-                                    <select name="Estado" id="Estado" class="form-control" required>
-                                        <option value="Programado" {{ old('Estado', 'Programado') == 'Programado' ? 'selected' : '' }}>Programado</option>
-                                        <option value="EnVuelo" {{ old('Estado') == 'EnVuelo' ? 'selected' : '' }}>En Vuelo</option>
-                                        <option value="Llegado" {{ old('Estado') == 'Llegado' ? 'selected' : '' }}>Llegado</option>
-                                        <option value="Retrasado" {{ old('Estado') == 'Retrasado' ? 'selected' : '' }}>Retrasado</option>
-                                        <option value="Cancelado" {{ old('Estado') == 'Cancelado' ? 'selected' : '' }}>Cancelado</option>
-                                    </select>
-                                    @error('Estado')
-                                        <div class="text-danger">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Crear Vuelo</button>
-                        <a href="{{ route('vuelos.index') }}" class="btn btn-secondary">Cancelar</a>
-                        <a href="{{ route('home') }}" class="btn btn-warning ">Regresar</a>
-                        <a href="{{ route('pasajeros.create') }}" class="btn btn-success float-end">Continuar a Pasajeros</a>
-                    </form>
+                <div class="flex justify-end space-x-4 pt-6 border-t border-gray-200">
+                    <a href="{{ route('vuelos.index') }}" class="material-btn border border-gray-300 text-gray-700 hover:bg-gray-50">
+                        <i class="material-icons text-sm mr-2">cancel</i>
+                        Cancelar
+                    </a>
+                    <button type="submit" class="material-btn material-btn-primary">
+                        <i class="material-icons text-sm mr-2">save</i>
+                        Crear Vuelo
+                    </button>
                 </div>
-            </div>
+            </form>
         </div>
     </div>
 </div>
@@ -163,11 +161,25 @@
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // 1. Obtención ÚNICA de los elementos
-   // const idVueloInput = document.getElementById('idVuelo');
     const origenSelect = document.getElementById('idAeropuertoOrigen');
     const destinoSelect = document.getElementById('idAeropuertoDestino');
     const fechaSalidaInput = document.getElementById('FechaSalida');
     const fechaLlegadaInput = document.getElementById('FechaLlegada');
+    const precioInput = document.getElementById('Precio');
+
+    // Función para calcular precio basado en origen y destino
+    function calcularPrecio() {
+        const origen = origenSelect.value;
+        const destino = destinoSelect.value;
+        if (origen && destino) {
+            // Aquí puedes implementar la lógica para calcular el precio
+            // Por ahora, asignamos un precio fijo basado en si es nacional o internacional
+            const precio = (origen.substring(0, 2) === destino.substring(0, 2)) ? 500.00 : 1500.00;
+            precioInput.value = precio.toFixed(2);
+        } else {
+            precioInput.value = '';
+        }
+    }
 
     // --- LÓGICA DE CÁLCULO DE FECHA DE LLEGADA ---
     function formatDateTimeLocal(date) {
@@ -185,36 +197,31 @@ document.addEventListener('DOMContentLoaded', function() {
             fechaLlegadaInput.value = '';
             return;
         }
-        
+
         // Convertir el valor del input a objeto Date
         const fechaSalida = new Date(fechaSalidaValue);
-        
+
         // Clonar la fecha y sumarle 1 día (24 horas * 60 minutos * 60 segundos * 1000 milisegundos)
         const fechaLlegada = new Date(fechaSalida.getTime() + (24 * 60 * 60 * 1000));
-        
+
         // Asignar el nuevo valor formateado
         fechaLlegadaInput.value = formatDateTimeLocal(fechaLlegada);
     }
 
     // --- INICIALIZACIÓN Y EVENTOS ---
 
+    // Escuchar cambios en origen y destino para calcular precio
+    origenSelect.addEventListener('change', calcularPrecio);
+    destinoSelect.addEventListener('change', calcularPrecio);
+
     // 2. Ejecutar al cargar la página si ya hay valor en FechaSalida (proveniente del formulario anterior)
     if (fechaSalidaInput.value && !fechaLlegadaInput.value) {
         // Ejecuta la actualización solo si FechaLlegada está vacía
         actualizarFechaLlegada();
     }
-    
+
     // Escuchar el evento 'change' en la fecha de salida para actualizar la llegada
     fechaSalidaInput.addEventListener('change', actualizarFechaLlegada);
-
-
-    // --- OTRAS LÓGICAS (Mantenidas) ---
-
-    // Generar ID automático para vuelo
-    // if (!idVueloInput.value) {
-    //     const timestamp = Date.now();
-    //     idVueloInput.value = timestamp.toString().slice(-6);
-    // }
 
     // Validación para asegurar que origen y destino sean diferentes
     function validarAeropuertos() {

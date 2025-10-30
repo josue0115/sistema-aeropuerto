@@ -43,6 +43,13 @@ Breadcrumbs::for('vuelos.edit', function (BreadcrumbTrail $trail, $vuelo) {
     $trail->push('Editar', route('vuelos.edit', $id));
 });
 
+// Home > Vuelos > Disponibles
+Breadcrumbs::for('vuelos.disponibles', function (BreadcrumbTrail $trail) {
+    $trail->parent('home');
+    $trail->push('Buscar Vuelos', route('home'));
+    $trail->push('Vuelos Disponibles', route('vuelos.disponibles'));
+});
+
 // Home > Pasajeros
 Breadcrumbs::for('pasajeros.index', function (BreadcrumbTrail $trail) {
     $trail->parent('home');

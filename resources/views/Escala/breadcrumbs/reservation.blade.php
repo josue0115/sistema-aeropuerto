@@ -1,10 +1,10 @@
-@if(request()->routeIs(['vuelos.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create']))
+@if(request()->routeIs(['vuelos.disponibles', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create']))
     <nav class="checkout-steps">
         <div class="container">
             <ul class="steps">
                 @php
-                    $steps = ['Vuelos', 'Pasajeros', 'Boletos', 'Servicios', 'Asientos'];
-                    $routes = ['vuelos.create', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create'];
+                    $steps = ['Vuelos', 'Pasajeros', 'Boletos', 'Servicios', 'Asientos', 'Reservas', 'Pago'];
+                    $routes = ['vuelos.disponibles', 'pasajeros.create', 'boletos.create', 'servicios.create', 'asientos.create', 'reservas.create', 'pagos.create'];
                     $currentRoute = request()->route()->getName();
                     $currentStepIndex = array_search($currentRoute, $routes);
                 @endphp

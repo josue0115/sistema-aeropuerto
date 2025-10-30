@@ -39,35 +39,56 @@ class AsientoController extends Controller
      * Store a newly created resource in storage.
      */
     public function store(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'idVuelo' => 'required|integer|exists:vuelo,idVuelo',
-            'NumeroAsiento' => 'required|string|max:10|unique:asientos,NumeroAsiento,NULL,idAsiento,idVuelo,' . $request->idVuelo,
-            'Clase' => 'nullable|string|max:45',
-            'Estado' => 'nullable|string|max:45',
-        ]);
+{
+    // Validación con los nombres correctos
+    $validator = Validator::make($request->all(), [
+        'IdVuelo' => 'required|integer|exists:vuelo,IdVuelo', // Mayúscula porque así está en la tabla vuelo
+        'NumeroAsiento' => 'required|string|max:10|unique:asientos,NumeroAsiento,NULL,idAsiento,idVuelo,' . $request->IdVuelo,
+        'Clase' => 'nullable|string|max:45',
+        'Estado' => 'nullable|string|max:45',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data = $request->only(['idVuelo', 'NumeroAsiento', 'Clase', 'Estado']);
-        Asiento::insertar($data);
-
-        // No sumar precio adicional por asiento - el precio ya está incluido en el boleto
-
-        // Verificar si se presionó el botón "Finalizar Reserva"
-        if ($request->input('action') === 'finalize') {
-            // Redirigir a crear reserva con datos de sesión
-            session(['pasajero_seleccionado' => session('pasajero_seleccionado')]);
-            session(['vuelo_seleccionado' => $request->idVuelo]);
-            return redirect()->route('reservas.create')->with('success', 'Datos preparados para crear reserva.');
-        }
-
-        return redirect()->route('asientos.index')->with('success', 'Asiento creado exitosamente.');
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
 
+    // Preparar datos con el nombre correcto de columna (minúscula para asientos)
+    $data = [
+        'idVuelo' => $request->IdVuelo, // Convertir de IdVuelo (form) a idVuelo (tabla asientos)
+        'NumeroAsiento' => $request->NumeroAsiento,
+        'Clase' => $request->Clase,
+        'Estado' => $request->Estado ?? 'Ocupado' // Por defecto Ocupado si no se especifica
+    ];
 
+    \Log::info('Creando asiento con datos:', $data);
+
+    // Insertar el asiento
+    Asiento::insertar($data);
+
+    // Verificar si se presionó el botón "Finalizar Reserva"
+    if ($request->input('action') === 'finalize') {
+        \Log::info('Botón Finalizar Reserva presionado');
+        
+        // Guardar datos en sesión para crear la reserva
+        session([
+            'vuelo_seleccionado' => $request->IdVuelo,
+            'asiento_creado' => $request->NumeroAsiento
+        ]);
+
+        \Log::info('Redirigiendo a reservas.create con sesión:', [
+            'vuelo' => session('vuelo_seleccionado'),
+            'asiento' => session('asiento_creado'),
+            'pasajero' => session('pasajero_seleccionado')
+        ]);
+
+        return redirect()->route('reservas.create')
+                        ->with('success', 'Asiento creado. Completa los datos de la reserva.');
+    }
+
+    // Para el botón "Crear Asiento" normal
+    return redirect()->route('asientos.index')
+                    ->with('success', 'Asiento creado exitosamente.');
+}
 
     /**
      * Crear reserva automáticamente usando datos de la sesión
@@ -156,24 +177,29 @@ class AsientoController extends Controller
      * Update the specified resource in storage.
      */
     public function update(Request $request, string $id)
-    {
-        $validator = Validator::make($request->all(), [
-            'idVuelo' => 'required|integer|exists:vuelo,idVuelo',
-            'NumeroAsiento' => 'required|string|max:10|unique:asientos,NumeroAsiento,' . $id . ',idAsiento,idVuelo,' . $request->idVuelo,
-            'Clase' => 'nullable|string|max:45',
-            'Estado' => 'nullable|string|max:45',
-        ]);
+{
+    $validator = Validator::make($request->all(), [
+        'IdVuelo' => 'required|integer|exists:vuelo,IdVuelo',
+        'NumeroAsiento' => 'required|string|max:10|unique:asientos,NumeroAsiento,' . $id . ',idAsiento,idVuelo,' . $request->IdVuelo,
+        'Clase' => 'nullable|string|max:45',
+        'Estado' => 'nullable|string|max:45',
+    ]);
 
-        if ($validator->fails()) {
-            return redirect()->back()->withErrors($validator)->withInput();
-        }
-
-        $data = $request->only(['idVuelo', 'NumeroAsiento', 'Clase', 'Estado']);
-        Asiento::actualizar($id, $data);
-
-        return redirect()->route('asientos.index')->with('success', 'Asiento actualizado exitosamente.');
+    if ($validator->fails()) {
+        return redirect()->back()->withErrors($validator)->withInput();
     }
 
+    $data = [
+        'idVuelo' => $request->IdVuelo, // Convertir mayúscula a minúscula
+        'NumeroAsiento' => $request->NumeroAsiento,
+        'Clase' => $request->Clase,
+        'Estado' => $request->Estado
+    ];
+    
+    Asiento::actualizar($id, $data);
+
+    return redirect()->route('asientos.index')->with('success', 'Asiento actualizado exitosamente.');
+}
     /**
      * Remove the specified resource from storage.
      */
@@ -183,42 +209,76 @@ class AsientoController extends Controller
         return redirect()->route('asientos.index')->with('success', 'Asiento eliminado exitosamente.');
     }
 
-    /**
-     * Get available seats for a specific flight
-     */
-    public function getAvailableSeats(Request $request)
-    {
-        $idVuelo = $request->query('idVuelo');
+        /**
+         * Get available seats for a specific flight
+         */
+        public function getAvailableSeats(Request $request)
+        {
+            try {
+                $idVuelo = $request->query('idVuelo');
 
-        if (!$idVuelo) {
-            return response()->json(['error' => 'ID de vuelo requerido'], 400);
+                if (!$idVuelo) {
+                    return response()->json(['error' => 'ID de vuelo requerido'], 400);
+                }
+
+                // Obtener todos los asientos del vuelo usando el método del modelo
+                // Si tu modelo usa stored procedures, usa esto:
+                $allSeats = Asiento::listar(); // Obtener todos los asientos
+                
+                // Filtrar solo los asientos de este vuelo
+                $flightSeats = array_filter($allSeats, function($asiento) use ($idVuelo) {
+                    return $asiento->idVuelo == $idVuelo;
+                });
+
+                // Define all possible seats in the airplane
+                $allPossibleSeats = [
+                    '1A', '1B', '1C', '1D', // Primera clase
+                    '2A', '2B', '2C', '2D', // Clase ejecutiva
+                    '3A', '3B', '3C', '3D', // Clase ejecutiva
+                    '4A', '4B', '4C', '4D', '4E', '4F', // Clase económica
+                    '5A', '5B', '5C', '5D', '5E', '5F', // Clase económica
+                    '6A', '6B', '6C', '6D', '6E', '6F'  // Clase económica
+                ];
+
+                // Get existing seat numbers
+                $existingSeats = array_map(function($asiento) {
+                    return $asiento->NumeroAsiento;
+                }, $flightSeats);
+
+                // Available seats are those not in the database
+                $available = array_diff($allPossibleSeats, $existingSeats);
+
+                // Occupied seats are those that exist in the database
+                $occupied = array_intersect($allPossibleSeats, $existingSeats);
+
+                \Log::info('Asientos disponibles cargados', [
+                    'idVuelo' => $idVuelo,
+                    'disponibles' => count($available),
+                    'ocupados' => count($occupied)
+                ]);
+
+                return response()->json([
+                    'available' => array_values($available),
+                    'occupied' => array_values($occupied)
+                ]);
+
+            } catch (\Exception $e) {
+                \Log::error('Error en getAvailableSeats: ' . $e->getMessage(), [
+                    'trace' => $e->getTraceAsString()
+                ]);
+
+                return response()->json([
+                    'error' => 'Error al cargar asientos',
+                    'message' => $e->getMessage()
+                ], 500);
+            }
         }
 
-        // Get all seats for the flight
-        $allSeats = Asiento::where('idVuelo', $idVuelo)->get();
-
-        // Define all possible seats in the airplane
-        $allPossibleSeats = [
-            '1A', '1B', '1C', '1D', // Primera clase
-            '2A', '2B', '2C', '2D', // Clase ejecutiva
-            '3A', '3B', '3C', '3D', // Clase ejecutiva
-            '4A', '4B', '4C', '4D', '4E', '4F', // Clase económica
-            '5A', '5B', '5C', '5D', '5E', '5F', // Clase económica
-            '6A', '6B', '6C', '6D', '6E', '6F'  // Clase económica
-        ];
-
-        // Get existing seat numbers
-        $existingSeats = $allSeats->pluck('NumeroAsiento')->toArray();
-
-        // Available seats are those not in the database
-        $available = array_diff($allPossibleSeats, $existingSeats);
-
-        // Occupied seats are those that exist in the database
-        $occupied = array_intersect($allPossibleSeats, $existingSeats);
-
-        return response()->json([
-            'available' => array_values($available),
-            'occupied' => array_values($occupied)
-        ]);
-    }
+        /**
+         * Alias para compatibilidad
+         */
+        public function availableSeats(Request $request)
+        {
+            return $this->getAvailableSeats($request);
+        }
 }

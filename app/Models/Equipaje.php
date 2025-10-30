@@ -16,6 +16,7 @@ class Equipaje extends Model
         'idBoleto',
         'Costo',
         'Dimensiones',
+        'Peso',
         'Monto',
         'CostoExtra',
         'Estado'
@@ -33,11 +34,12 @@ class Equipaje extends Model
 
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Equipaje(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Insertar_Equipaje(?, ?, ?, ?, ?, ?, ?, ?)', [
             $data['idEquipaje'],
             $data['idBoleto'],
             $data['Costo'],
             $data['Dimensiones'],
+            $data['Peso'],
             $data['Monto'],
             $data['CostoExtra'],
             $data['Estado']
@@ -46,11 +48,12 @@ class Equipaje extends Model
 
     public static function actualizar($id, $data)
     {
-        return DB::select('CALL Sp_Actualizar_Equipaje(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Actualizar_Equipaje(?, ?, ?, ?, ?, ?, ?, ?)', [
             $id,
             $data['idBoleto'],
             $data['Costo'],
             $data['Dimensiones'],
+            $data['Peso'],
             $data['Monto'],
             $data['CostoExtra'],
             $data['Estado']

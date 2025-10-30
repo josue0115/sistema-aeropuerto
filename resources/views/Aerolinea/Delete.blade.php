@@ -27,15 +27,20 @@
               </div>
               <div class="mb-3">
                   <label>Nombre</label>
-                  <input type="text" class="form-control" value="{{ $aerolinea->NombreAerolinea }}" readonly>
+                  <input type="text" class="form-control" value="{{ $aerolinea->Nombre }}" readonly>
               </div>
               <div class="mb-3">
-                  <label>País</label>
-                  <input type="text" class="form-control" value="{{ $aerolinea->Pais }}" readonly>
+                  <label>IATA</label>
+                  <input type="hidden" name="IATA" value="{{ $aerolinea->IATA }}">
+                  <input type="text" class="form-control" value="{{ $aerolinea->IATA }}" readonly>
               </div>
               <div class="mb-3">
                   <label>Ciudad</label>
                   <input type="text" class="form-control" value="{{ $aerolinea->Ciudad }}" readonly>
+              </div>
+              <div class="mb-3">
+                  <label>País</label>
+                  <input type="text" class="form-control" value="{{ $aerolinea->Pais }}" readonly>
               </div>
               <div class="mb-3">
                   <label>Estado</label>
@@ -44,7 +49,7 @@
           </div>
           <div class="modal-footer">
             <a href="{{ route('aerolinea.Listar') }}" class="btn btn-secondary">Cancelar</a>
-            <form action="{{ route('aerolinea.destroy', $aerolinea->IdAerolinea) }}" method="POST" style="display:inline;">
+            <form action="{{ route('aerolinea.destroy', $aerolinea->idAerolinea) }}" method="POST" style="display:inline;">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">Eliminar</button>

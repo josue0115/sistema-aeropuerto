@@ -7,15 +7,15 @@ use Illuminate\Database\Eloquent\Model;
 class Aerolinea extends Model
 {
     protected $table = 'aerolinea';
-    protected $primaryKey = 'IdAerolinea';
-    public $incrementing = false;
-    protected $keyType = 'string';
+    protected $primaryKey = 'idAerolinea';
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
-        'IdAerolinea',
-        'NombreAerolinea',
-        'Pais',
+        'Nombre',
+        'IATA',
         'Ciudad',
+        'Pais',
         'Estado'
     ];
 }

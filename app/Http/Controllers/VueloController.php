@@ -41,8 +41,8 @@ class VueloController extends Controller
         // Si hay datos de búsqueda, mostrar vuelos disponibles en lugar del formulario de creación
         if ($busquedaData && isset($busquedaData['origen']) && isset($busquedaData['destino'])) {
             $vuelos = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
-                ->where('idAeropuertoOrigen', $busquedaData['origen'])
-                ->where('idAeropuertoDestino', $busquedaData['destino'])
+                ->where('IdAeropuertoOrigen', $busquedaData['origen'])
+                ->where('IdAeropuertoDestino', $busquedaData['destino'])
                 ->where('Estado', 'Programado')
                 ->get();
 
@@ -81,11 +81,17 @@ class VueloController extends Controller
             'tipo_viaje' => $request->tipo_viaje
         ];
 
-        $vuelos = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
-            ->where('idAeropuertoOrigen', $busquedaData['origen'])
-            ->where('idAeropuertoDestino', $busquedaData['destino'])
-            ->where('Estado', 'Programado')
-            ->get();
+        $query = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
+            ->where('IdAeropuertoOrigen', $busquedaData['origen'])
+            ->where('IdAeropuertoDestino', $busquedaData['destino'])
+            ->whereIn('Estado', ['Disponible', 'Programado']);
+
+        // Filtrar por fecha si se proporciona
+        if ($busquedaData['fecha_ida']) {
+            $query->whereDate('FechaSalida', $busquedaData['fecha_ida']);
+        }
+
+        $vuelos = $query->paginate(9); // 9 vuelos por página (3x3 grid)
 
         return view('Vuelo.ListarDisponibles', compact('vuelos', 'busquedaData'));
     }
@@ -94,8 +100,21 @@ class VueloController extends Controller
     public function show($id)
     {
         $vuelo = Vuelo::obtenerPorId($id);
+        
+        // Verificar que el vuelo exista
+        if (!$vuelo) {
+            return redirect()->route('vuelos.index')
+                            ->with('error', 'Vuelo no encontrado');
+        }
+        
         return view('Vuelo.Show', compact('vuelo'));
     }
+//  public function show($id)
+//     {
+//         $vuelo = Vuelo::obtenerPorId($id);
+//         return view('Vuelo.Show', compact('vuelo'));
+//     }
+
 
     // Mostrar formulario para editar vuelo
     public function edit($id)

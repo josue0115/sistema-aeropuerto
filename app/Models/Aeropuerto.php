@@ -7,17 +7,26 @@ use Illuminate\Database\Eloquent\Model;
 class Aeropuerto extends Model
 {
     protected $table = 'aeropuerto';
-    protected $primaryKey = 'IdAeropuerto';
+    protected $primaryKey = 'idAeropuerto';
     public $incrementing = false;
     protected $keyType = 'string';
 
     protected $fillable = [
-        'IdAeropuerto',
+        'idAeropuerto',
         'NombreAeropuerto',
         'Pais',
         'Ciudad',
         'Estado'
     ];
+
+    protected $casts = [
+        'idAeropuerto' => 'string',
+    ];
+
+    public function getRouteKeyName()
+    {
+        return 'idAeropuerto';
+    }
 
     public static function listar()
     {

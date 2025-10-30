@@ -28,7 +28,7 @@
     <div class="container mt-4">
         <div class="row">
             <div class="col-12 text-center">
-                <a href="{{ route('vuelos.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Vuelos</a>
+                <a href="{{ route('vuelos.disponibles') }}" class="btn btn-warning btn-lg me-2">Anterior: Vuelos</a>
                 <a href="{{ route('boletos.create') }}" class="btn btn-success btn-lg">Siguiente: Boletos</a>
             </div>
         </div>

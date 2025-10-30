@@ -13,7 +13,7 @@ class AeropuertoController extends Controller
     public function index()
     {
         $aeropuertos = Aeropuerto::listar();
-        return view('aeropuerto.index', compact('aeropuertos'));
+        return view('aeropuertos.index', compact('aeropuertos'));
     }
 
     // Mostrar la lista de aeropuertos
@@ -58,12 +58,8 @@ class AeropuertoController extends Controller
             'Estado' => 'required|max:10',
         ]);
 
-        // Generar código IATA automáticamente: combinación única de letras y números
-        do {
-            $letters = strtoupper(substr(md5(uniqid(mt_rand(), true)), 0, 3));
-            $numbers = str_pad(rand(10, 999), 3, '0', STR_PAD_LEFT);
-            $iata = $letters . $numbers;
-        } while (Aeropuerto::where('IdAeropuerto', $iata)->exists());
+        // Generar IATA automáticamente: 3 letras + 3 números
+        $iata = strtoupper(substr(md5(uniqid()), 0, 3)) . rand(100, 999);
 
         $data = $request->all();
         $data['IdAeropuerto'] = $iata;
@@ -71,7 +67,7 @@ class AeropuertoController extends Controller
         Aeropuerto::create($data);
 
         // Redirige a la misma página de Listar usando la ruta con nombre
-        return redirect()->route('aeropuerto.listar')
+        return redirect()->route('aeropuertos.listar')
                          ->with('success', 'Aeropuerto creado correctamente');
     }
 
@@ -87,7 +83,7 @@ class AeropuertoController extends Controller
 
         $aeropuerto->update($request->except('IdAeropuerto'));
 
-        return redirect()->route('aeropuerto.listar')
+        return redirect()->route('aeropuertos.listar')
                          ->with('success', 'Aeropuerto actualizado correctamente');
     }
 
