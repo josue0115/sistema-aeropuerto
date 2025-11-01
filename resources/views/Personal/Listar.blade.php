@@ -1,13 +1,8 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Lista de Personal</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
+@extends('layouts.app')
+
+@section('page-title', 'Lista de Personal')
+
+@section('content')
 <div class="container mt-4">
     <h1 class="mb-4">Lista de Personal</h1>
 
@@ -15,7 +10,7 @@
     <a href="{{ route('personal.create') }}" class="btn btn-primary mb-3">Agregar Personal</a>
 
     <!-- Tabla de Personal -->
-    <table class="table table-bordered">
+    <table id="tablaPersonal" class="table table-bordered">
         <thead>
             <tr>
                 <th>ID</th>
@@ -55,8 +50,16 @@
         </tbody>
     </table>
 </div>
+@endsection
 
-<!-- Bootstrap JS -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-</body>
-</html>
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#tablaPersonal').DataTable();
+});
+</script>
+@endsection

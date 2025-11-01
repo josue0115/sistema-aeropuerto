@@ -1,4 +1,4 @@
-    @extends('layouts.app')
+@extends('layouts.app')
 
 @section('page-title', 'Dashboard - Sistema Aeropuerto')
 
@@ -454,6 +454,24 @@
                 </div>
                 <a href="{{ route('tipo_servicios.index') }}" class="material-btn material-btn-primary w-full">
                     Gestionar Tipos
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-yellow-600">analytics</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Reportes</h4>
+                        <p class="text-gray-600 text-sm">Reportes del sistema</p>
+                    </div>
+                </div>
+                <a href="{{ route('reportes.disponibilidad-boletos') }}" class="material-btn material-btn-primary w-full">
+                    <i class="material-icons text-sm mr-2">analytics</i>
+                    Ver Reportes
                 </a>
             </div>
         </div>

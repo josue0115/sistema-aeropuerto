@@ -43,6 +43,9 @@
                         <x-nav-link :href="route('asientos.index')" :active="request()->routeIs('asientos.index')">
                             {{ __('Asientos') }}
                         </x-nav-link>
+                        <x-nav-link :href="route('reportes.disponibilidad-boletos')" :active="request()->routeIs('reportes.disponibilidad-boletos')">
+                            {{ __('Reportes') }}
+                        </x-nav-link>
                     @elseif(auth()->user()->role === 'operador')
                         <x-nav-link :href="route('vuelos.index')" :active="request()->routeIs('vuelos.index')">
                             {{ __('Vuelos') }}
@@ -70,6 +73,9 @@
                         </x-nav-link>
                         <x-nav-link :href="route('historial_vuelos.index')" :active="request()->routeIs('historial_vuelos.index')">
                             {{ __('Historial Vuelos') }}
+                        </x-nav-link>
+                        <x-nav-link :href="route('reportes.disponibilidad-boletos')" :active="request()->routeIs('reportes.disponibilidad-boletos')">
+                            {{ __('Reportes') }}
                         </x-nav-link>
                     @elseif(in_array(auth()->user()->role, ['cliente', 'operador']))
                         <x-nav-link :href="route('vuelos.disponibles')" :active="request()->routeIs('vuelos.disponibles')">
@@ -115,11 +121,9 @@
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
 
-                            <x-dropdown-link :href="route('logout')"
-                                    onclick="event.preventDefault();
-                                                this.closest('form').submit();">
+                            <button type="submit" class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
                                 {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            </button>
                         </form>
                     </x-slot>
                 </x-dropdown>
@@ -171,6 +175,9 @@
                 <x-responsive-nav-link :href="route('asientos.index')" :active="request()->routeIs('asientos.index')">
                     {{ __('Asientos') }}
                 </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reportes.disponibilidad-boletos')" :active="request()->routeIs('reportes.disponibilidad-boletos')">
+                    {{ __('Reportes') }}
+                </x-responsive-nav-link>
             @elseif(auth()->user()->role === 'operador')
                 <x-responsive-nav-link :href="route('vuelos.index')" :active="request()->routeIs('vuelos.index')">
                     {{ __('Vuelos') }}
@@ -198,6 +205,9 @@
                 </x-responsive-nav-link>
                 <x-responsive-nav-link :href="route('historial_vuelos.index')" :active="request()->routeIs('historial_vuelos.index')">
                     {{ __('Historial Vuelos') }}
+                </x-responsive-nav-link>
+                <x-responsive-nav-link :href="route('reportes.disponibilidad-boletos')" :active="request()->routeIs('reportes.disponibilidad-boletos')">
+                    {{ __('Reportes') }}
                 </x-responsive-nav-link>
             @elseif(in_array(auth()->user()->role, ['cliente', 'operador']))
                 <x-responsive-nav-link :href="route('vuelos.disponibles')" :active="request()->routeIs('vuelos.disponibles')">
@@ -234,11 +244,9 @@
                 <form method="POST" action="{{ route('logout') }}">
                     @csrf
 
-                    <x-responsive-nav-link :href="route('logout')"
-                            onclick="event.preventDefault();
-                                        this.closest('form').submit();">
+                    <button type="submit" class="block w-full px-4 py-2 text-start text-sm leading-5 text-gray-700 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 transition duration-150 ease-in-out">
                         {{ __('Log Out') }}
-                    </x-responsive-nav-link>
+                    </button>
                 </form>
             </div>
         </div>

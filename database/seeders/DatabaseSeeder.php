@@ -19,5 +19,15 @@ class DatabaseSeeder extends Seeder
             'name' => 'Test User',
             'email' => 'test@example.com',
         ]);
+
+        // Ejecutar seeders para datos de prueba
+        $this->call([
+            AerolineasSeeder::class,
+            AeropuertosSeeder::class,
+            AvionesSeeder::class,
+            VuelosSeeder::class,
+            PasajerosSeeder::class,
+            BoletosSeeder::class,
+        ]);
     }
 }

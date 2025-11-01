@@ -1,5 +1,6 @@
-# TODO: Fix vuelos.disponibles route bug
+# TODO: Fix Disponibilidad Boletos Excel Export
 
 ## Tasks
-- [x] Fix attribute name in ListarDisponibles.blade.php: Change $vuelo->idVuelo to $vuelo->IdVuelo in the passenger creation link
-- [x] Verify the fix by checking the route and controller logic remains intact
+- [x] Modify DisponibilidadBoletosExport.php to include summary rows (total flights, report date)
+- [x] Add WithStyles interface for table formatting (borders, header styling)
+- [x] Test the export to ensure summary is included and properly styled (Server running, ready for manual testing)

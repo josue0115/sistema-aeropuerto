@@ -21,8 +21,27 @@ use App\Http\Controllers\TipoServicioController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AeropuertoController;
 use App\Http\Controllers\PagoController;
+use App\Http\Controllers\ReporteController;
 
-Route::get('/', [HomeController::class, 'index'])->name('home')->middleware('auth');
+Route::get('/', [HomeController::class, 'index'])->middleware('auth')->name('home');
+
+// =====================================================
+// RUTAS DE REPORTES
+// =====================================================
+Route::middleware(['auth', 'role:operador|admin'])->group(function () {
+    Route::get('/reportes', function () {
+        return view('reportes');
+    })->name('reportes.index');
+    Route::get('/reportes/disponibilidad-boletos', [ReporteController::class, 'disponibilidadBoletos'])->name('reportes.disponibilidad-boletos');
+    Route::get('/reportes/disponibilidad-boletos/ver', [ReporteController::class, 'verDisponibilidadBoletos'])->name('reportes.disponibilidad-boletos.ver');
+    Route::post('/reportes/disponibilidad-boletos/generar', [ReporteController::class, 'generarDisponibilidadBoletos'])->name('reportes.disponibilidad-boletos.generar');
+    Route::get('/reportes/disponibilidad-boletos/exportar', [ReporteController::class, 'exportarDisponibilidadBoletos'])->name('reportes.disponibilidad-boletos.exportar');
+
+    Route::get('/reportes/boletos-facturados', [ReporteController::class, 'boletosFacturados'])->name('reportes.boletos-facturados');
+    Route::get('/reportes/boletos-facturados/ver', [ReporteController::class, 'verBoletosFacturados'])->name('reportes.boletos-facturados.ver');
+    Route::post('/reportes/boletos-facturados/generar', [ReporteController::class, 'generarBoletosFacturados'])->name('reportes.boletos-facturados.generar');
+    Route::get('/reportes/boletos-facturados/exportar', [ReporteController::class, 'exportarBoletosFacturados'])->name('reportes.boletos-facturados.exportar');
+});
 
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -43,7 +62,6 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
     Route::get('/aeropuertos', [AeropuertoController::class, 'Listar'])->name('aeropuertos.index');
     Route::get('aeropuerto/create', [AeropuertoController::class, 'create'])->name('aeropuerto.create');
     Route::get('aeropuerto/{aeropuerto}', [AeropuertoController::class, 'show'])->name('aeropuerto.show');
-    Route::get('aeropuertos/{aeropuerto}', [AeropuertoController::class, 'show'])->name('aeropuertos.show');
     Route::get('aeropuerto/{aeropuerto}/edit', [AeropuertoController::class, 'edit'])->name('aeropuerto.edit');
     Route::get('aeropuerto/{aeropuerto}/delete', [AeropuertoController::class, 'delete'])->name('aeropuerto.delete');
     Route::post('/aeropuerto/store', [AeropuertoController::class, 'store'])->name('aeropuerto.store');
@@ -115,7 +133,7 @@ Route::middleware(['auth', 'role:admin'])->group(function () {
 // =====================================================
 Route::middleware(['auth', 'role:cliente|operador'])->group(function () {
     // Vistas de creación (formularios)
-    
+
     Route::get('/pasajeros/create', [PasajeroController::class, 'create'])->name('pasajeros.create');
     Route::get('/boletos/create', [BoletoController::class, 'create'])->name('boletos.create');
     Route::get('/equipajes/create', [EquipajeController::class, 'create'])->name('equipajes.create');
@@ -125,9 +143,9 @@ Route::middleware(['auth', 'role:cliente|operador'])->group(function () {
 
     Route::post('/vuelos/disponibles', [VueloController::class, 'listarDisponibles'])->name('vuelos.disponibles.post');
    Route::get('/vuelos/disponibles', [VueloController::class, 'listarDisponibles'])->name('vuelos.disponibles');
-    
+
     //Route::post('/vuelos/disponibles', [VueloController::class, 'listarDisponibles'])->name('vuelos.disponibles.post');
-    
+
     // Pasajeros
     Route::post('/pasajeros', [PasajeroController::class, 'store'])->name('pasajeros.store');
     Route::get('/pasajeros/{pasajero}', [PasajeroController::class, 'show'])->name('pasajeros.show');
@@ -159,7 +177,7 @@ Route::middleware(['auth', 'role:cliente|operador'])->group(function () {
     // Pagos
     Route::post('/pagos', [PagoController::class, 'store'])->name('pagos.store');
     Route::get('/pagos/success', [PagoController::class, 'success'])->name('pagos.success');
-    
+
     // Facturas PDF
     Route::get('/facturas/{factura}/pdf', [FacturaController::class, 'generatePdf'])->name('facturas.pdf');
 });
@@ -169,7 +187,7 @@ Route::middleware(['auth', 'role:cliente|operador'])->group(function () {
 // =====================================================
 Route::middleware(['auth', 'role:operador'])->group(function () {
     // Vuelos
-   
+
         // ✅ Orden correcto
         Route::get('/vuelos', [VueloController::class, 'index'])->name('vuelos.index');
         Route::post('/vuelos/buscar', [VueloController::class, 'buscar'])->name('vuelos.buscar');
