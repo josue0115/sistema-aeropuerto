@@ -1,30 +1,99 @@
 @extends('layouts.app')
 
+@section('page-title', 'Lista de Servicios')
+
 @section('content')
-<div class="container">
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lista de Servicios</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <style>
+        /* Variables de color de ejemplo (ajusta a tu tema real si tienes) */
+        :root {
+            --color-primary: #1976D2; /* Azul */
+            --color-primary-light: #42A5F5;
+            --color-secondary: #FFC107; /* Amarillo */
+            --color-accent: #FF9800; /* Naranja */
+            --color-success: #38a169; /* Verde */
+            --color-danger: #E53E3E; /* Rojo */
+            --color-text-muted: #6c757d;
+        }
+
+        .material-card {
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(33, 33, 33, 0.4);
+            border-radius: 6px;
+            margin-bottom: 30px;
+            background-color: white;
+        }
+
+        .material-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: color 0.15s ease-in-out, background-color 0.15s ease-in-out, border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+            text-decoration: none;
+        }
+
+        .material-btn-primary {
+            color: white;
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+            border-color: var(--color-primary);
+        }
+
+        .material-btn-primary:hover {
+            color: white;
+            background: var(--color-primary);
+        }
+    </style>
+</head>
+<body>
+<div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Servicios
-                        <a href="{{ route('servicios.create') }}" class="btn btn-primary float-end">Crear Nuevo Servicio</a>
-                    </h4>
+        <div class="col-12">
+            <div class="material-card">
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); color: white; border: none; padding: 24px;">
+                    <h3 class="card-title mb-0" style="font-weight: 600; font-size: 1.5rem;">
+                        <i class="material-icons" style="vertical-align: middle; margin-right: 12px;">room_service</i>
+                        Gestión de Servicios
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{{ route('servicios.create') }}" class="material-btn material-btn-primary">
+                            <i class="material-icons" style="font-size: 1rem; margin-right: 8px;">add</i>
+                            Nuevo Servicio
+                        </a>
+                    </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" style="padding: 0;">
                     @if(session('success'))
-                        <div class="alert alert-success">
+                        <div class="alert alert-success d-flex align-items-center" style="margin: 20px; margin-bottom: 0;">
+                            <i class="material-icons" style="vertical-align: middle; margin-right: 8px;">check_circle</i>
                             {{ session('success') }}
                         </div>
                     @endif
 
-                    <table class="table table-bordered">
+                    <table id="tablaServicios" class="table table-striped w-100">
                         <thead>
                             <tr>
                                 <th>ID Servicio</th>
                                 <th>ID Boleto</th>
                                 <th>Fecha</th>
                                 <th>Tipo Servicio</th>
-                                <th>Costo</th>
+                                <th>Costo (Unitario)</th>
                                 <th>Cantidad</th>
                                 <th>Costo Total</th>
                                 <th>Estado</th>
@@ -32,29 +101,55 @@
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($servicios as $servicio)
+                            @forelse($servicios ?? [] as $servicio)
                                 <tr>
                                     <td>{{ $servicio->idServicio }}</td>
-                                    <td>{{ $servicio->idBoleto }}</td>
-                                    <td>{{ $servicio->Fecha }}</td>
-                                    <td>{{ $servicio->tipo_servicio_nombre ?? $servicio->TipoServicio ?? 'N/A' }}</td>
-                                    <td>{{ $servicio->Costo }}</td>
-                                    <td>{{ $servicio->Cantidad }}</td>
-                                    <td>{{ $servicio->CostoTotal }}</td>
-                                    <td>{{ $servicio->Estado }}</td>
+                                    <td style="font-weight: 500;">{{ $servicio->idBoleto }}</td>
+                                    <td>{{ $servicio->Fecha ? \Carbon\Carbon::parse($servicio->Fecha)->format('d/m/Y') : 'N/A' }}</td>
                                     <td>
-                                        <a href="{{ route('servicios.show', $servicio->idServicio) }}" class="btn btn-info btn-sm">Ver</a>
-                                        <a href="{{ route('servicios.edit', $servicio->idServicio) }}" class="btn btn-warning btn-sm">Editar</a>
-                                        <form action="{{ route('servicios.destroy', $servicio->idServicio) }}" method="POST" style="display: inline;">
-                                            @csrf
-                                            @method('DELETE')
-                                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('¿Estás seguro?')">Eliminar</button>
-                                        </form>
+                                        <span class="badge" style="background: linear-gradient(135deg, #00BCD4, #4DD0E1); color: white; padding: 6px 12px; border-radius: 20px; font-weight: 500;">
+                                            {{ $servicio->tipo_servicio_nombre ?? $servicio->TipoServicio ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td style="font-weight: 500; color: var(--color-success);">
+                                        Q{{ number_format($servicio->Costo ?? 0, 2) }}
+                                    </td>
+                                    <td style="text-align: center;">{{ $servicio->Cantidad }}</td>
+                                    <td style="font-weight: 600; color: var(--color-primary); font-size: 1.1rem; white-space: nowrap;">
+                                        Q{{ number_format($servicio->CostoTotal ?? 0, 2) }}
+                                    </td>
+                                    <td>
+                                        <span class="badge" style="background: {{ $servicio->Estado == 'Activo' ? 'linear-gradient(135deg, #38a169, #48bb78)' : 'linear-gradient(135deg, #e53e3e, #f56565)' }}; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 500;">
+                                            {{ $servicio->Estado ?? 'N/A' }}
+                                        </span>
+                                    </td>
+                                    <td style="white-space: nowrap;">
+                                        <div class="btn-group" role="group">
+                                            {{-- Botón Ver --}}
+                                            <a href="{{ route('servicios.show', $servicio->idServicio) }}" class="material-btn material-btn-primary" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 4px;">
+                                                <i class="material-icons" style="font-size: 1rem;">visibility</i>
+                                            </a>
+                                            {{-- Botón Editar --}}
+                                            <a href="{{ route('servicios.edit', $servicio->idServicio) }}" class="material-btn" style="background: linear-gradient(135deg, #d69e2e, #ed8936); color: white; padding: 6px 12px; font-size: 0.8rem; margin-right: 4px;">
+                                                <i class="material-icons" style="font-size: 1rem;">edit</i>
+                                            </a>
+                                            {{-- Botón Eliminar --}}
+                                            <form action="{{ route('servicios.destroy', $servicio->idServicio) }}" method="POST" style="display: inline;">
+                                                @csrf
+                                                @method('DELETE')
+                                                <button type="submit" class="material-btn" style="background: linear-gradient(135deg, #e53e3e, #f56565); color: white; padding: 6px 12px; font-size: 0.8rem; border: none;" onclick="return confirm('¿Estás seguro de eliminar este servicio?')">
+                                                    <i class="material-icons" style="font-size: 1rem;">delete</i>
+                                                </button>
+                                            </form>
+                                        </div>
                                     </td>
                                 </tr>
                             @empty
                                 <tr>
-                                    <td colspan="9" class="text-center">No hay servicios registrados.</td>
+                                    <td colspan="9" class="text-center" style="padding: 40px; color: var(--color-text-muted); font-style: italic;">
+                                        <i class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 16px;">room_service</i>
+                                        No hay servicios registrados.
+                                    </td>
                                 </tr>
                             @endforelse
                         </tbody>
@@ -64,4 +159,28 @@
         </div>
     </div>
 </div>
+@endsection
+
+@section('scripts')
+<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
+<script src="https://cdn.datatables.net/1.13.6/js/dataTables.bootstrap5.min.js"></script>
+{{-- Script para Bootstrap no es necesario si ya está en el layout principal, pero lo dejo por si acaso --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+$(document).ready(function() {
+    $('#tablaServicios').DataTable({
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        columnDefs: [
+            { orderable: false, targets: -1 }
+        ]
+    });
+});
+</script>
 @endsection

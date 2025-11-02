@@ -9,10 +9,15 @@ class Avion extends Model
 {
     use HasFactory;
 
-    protected $table = 'aviones';
+    protected $table = 'avion';
     protected $primaryKey = 'IdAvion';
-    public $incrementing = false; // porque es VARCHAR
-    protected $keyType = 'string';
+    public $incrementing = true; // porque es INT
+    protected $keyType = 'int';
+
+    public function getRouteKeyName()
+    {
+        return 'IdAvion';
+    }
 
     protected $fillable = [
         'IdAvion',

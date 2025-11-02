@@ -1,3 +1,8 @@
+@extends('layouts.app')
+
+@section('page-title', 'Editar Vuelo - Sistema Aeropuerto')
+
+@section('content')
 <!DOCTYPE html>
 <html lang="es">
 <head>
@@ -44,9 +49,11 @@
       </div>
     </div>
 </div>
-
+@endsection
+@section('scripts')
 <!-- Scripts -->
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+@endsection
 </body>
 </html>

@@ -20,7 +20,8 @@ class Factura extends Model
         'monto',
         'impuesto',
         'MontoTotal',
-        'Estado'
+        'Estado',
+        'user_id'
     ];
 
     public static function listar()
@@ -35,27 +36,29 @@ class Factura extends Model
 
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Factura(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Insertar_Factura(?, ?, ?, ?, ?, ?, ?, ?)', [
             $data['idFactura'],
             $data['idBoleto'],
             $data['FechaEmision'],
             $data['monto'],
             $data['impuesto'],
             $data['MontoTotal'],
-            $data['Estado']
+            $data['Estado'],
+            $data['user_id']
         ]);
     }
 
     public static function actualizar($id, $data)
     {
-        return DB::select('CALL Sp_Actualizar_Factura(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Actualizar_Factura(?, ?, ?, ?, ?, ?, ?, ?)', [
             $id,
             $data['idBoleto'],
             $data['FechaEmision'],
             $data['monto'],
             $data['impuesto'],
             $data['MontoTotal'],
-            $data['Estado']
+            $data['Estado'],
+            $data['user_id']
         ]);
     }
 

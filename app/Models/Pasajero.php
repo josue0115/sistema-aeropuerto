@@ -27,6 +27,9 @@ class Pasajero extends Model
 
     public static function obtenerPorId($id)
     {
+        if (!is_numeric($id)) {
+            return null;
+        }
         return DB::select('CALL Sp_Consulta_Pasajero(?)', [$id]);
     }
 

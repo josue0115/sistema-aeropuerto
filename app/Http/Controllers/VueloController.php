@@ -14,71 +14,15 @@ class VueloController extends Controller
     // Mostrar la lista de vuelos
     public function index()
     {
-        $vuelos = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])->get();
-        $vuelos->load(['avion', 'aeropuertoOrigen', 'aeropuertoDestino']);
+        $vuelos = Vuelo::listar();
         return view('Vuelo.Listar', compact('vuelos'));
     }
 
     // Mostrar formulario para crear vuelo
-    // public function create()
-    // {
-    //     $aviones = Avion::all();
-    //     $aeropuertos = Aeropuerto::all();
-    //     return view('Vuelo.Create', compact('aviones', 'aeropuertos'));
-    // }
-
-    // Mostrar detalles de un vuelo
-    public function show(Vuelo $vuelo)
-    {
-        $vuelo->load('avion', 'aeropuertoOrigen', 'aeropuertoDestino');
-        return view('Vuelo.Show', compact('vuelo'));
-    }
-
-    // Mostrar formulario para editar vuelo
-    public function edit(Vuelo $vuelo)
-    {
-        $vuelo->load('avion', 'aeropuertoOrigen', 'aeropuertoDestino');
-        $aviones = Avion::listar();
-        $aeropuertos = Aeropuerto::listar();
-        return view('Vuelo.Edit', compact('vuelo', 'aviones', 'aeropuertos'));
-    }
-
-    // Mostrar formulario para eliminar vuelo
-    public function delete(Vuelo $vuelo)
-    {
-        $vuelo->load('avion', 'aeropuertoOrigen', 'aeropuertoDestino');
-        return view('Vuelo.Delete', compact('vuelo'));
-    }
-
-    // Guardar un nuevo vuelo
-    // public function store(Request $request)
-    // {
-    //     $request->validate([
-    //         'IdAvion' => 'required|exists:avion,IdAvion',
-    //         'idAeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
-    //         'idAeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:idAeropuertoOrigen',
-    //         'FechaSalida' => 'required|date|after_or_equal:today',
-    //         'FechaLlegada' => 'required|date|after_or_equal:FechaSalida',
-    //         'Estado' => 'required|max:10',
-    //     ]);
-
-    //     $precio = $this->getPrecioByRuta($request->idAeropuertoOrigen, $request->idAeropuertoDestino);
-    //     $request->merge(['Precio' => $precio]);
-
-    //     Vuelo::create($request->all());
-
-    //     return redirect()->route('vuelo.index')
-    //                      ->with('success', 'Vuelo creado correctamente');
-    // }
-
-    /**
-     * Show the form for creating a new resource.
-     */
     public function create(Request $request)
     {
-        $aviones = Avion::listar();
-        $aeropuertos = Aeropuerto::listar();
-
+        $aviones = Avion::all();
+        $aeropuertos = Aeropuerto::all();
         // Obtener datos de búsqueda desde sessionStorage o parámetros GET
         $busquedaData = null;
         if ($request->session()->has('busquedaVuelos')) {
@@ -97,8 +41,8 @@ class VueloController extends Controller
         // Si hay datos de búsqueda, mostrar vuelos disponibles en lugar del formulario de creación
         if ($busquedaData && isset($busquedaData['origen']) && isset($busquedaData['destino'])) {
             $vuelos = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
-                ->where('idAeropuertoOrigen', $busquedaData['origen'])
-                ->where('idAeropuertoDestino', $busquedaData['destino'])
+                ->where('IdAeropuertoOrigen', $busquedaData['origen'])
+                ->where('IdAeropuertoDestino', $busquedaData['destino'])
                 ->where('Estado', 'Programado')
                 ->get();
 
@@ -137,50 +81,64 @@ class VueloController extends Controller
             'tipo_viaje' => $request->tipo_viaje
         ];
 
-        $vuelos = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
-            ->where('idAeropuertoOrigen', $busquedaData['origen'])
-            ->where('idAeropuertoDestino', $busquedaData['destino'])
-            ->where('Estado', 'Programado')
-            ->get();
+        $query = Vuelo::with(['avion', 'aeropuertoOrigen', 'aeropuertoDestino'])
+            ->where('IdAeropuertoOrigen', $busquedaData['origen'])
+            ->where('IdAeropuertoDestino', $busquedaData['destino'])
+            ->whereIn('Estado', ['Disponible', 'Programado']);
+
+        // Filtrar por fecha si se proporciona
+        if ($busquedaData['fecha_ida']) {
+            $query->whereDate('FechaSalida', $busquedaData['fecha_ida']);
+        }
+
+        $vuelos = $query->paginate(9); // 9 vuelos por página (3x3 grid)
 
         return view('Vuelo.ListarDisponibles', compact('vuelos', 'busquedaData'));
     }
-    // Actualizar un vuelo
-    public function update(Request $request, Vuelo $vuelo)
+
+    // Mostrar detalles de un vuelo
+    public function show($id)
     {
-        $request->validate([
-            'IdAvion' => 'required|exists:avion,IdAvion',
-            'idAeropuertoOrigen' => 'required|exists:aeropuerto,IdAeropuerto',
-            'idAeropuertoDestino' => 'required|exists:aeropuerto,IdAeropuerto|different:idAeropuertoOrigen',
-            'FechaSalida' => 'required|date|after_or_equal:today',
-            'FechaLlegada' => 'required|date|after_or_equal:FechaSalida',
-            'Estado' => 'required|max:10',
-        ]);
+        $vuelo = Vuelo::obtenerPorId($id);
+        
+        // Verificar que el vuelo exista
+        if (!$vuelo) {
+            return redirect()->route('vuelos.index')
+                            ->with('error', 'Vuelo no encontrado');
+        }
+        
+        return view('Vuelo.Show', compact('vuelo'));
+    }
+//  public function show($id)
+//     {
+//         $vuelo = Vuelo::obtenerPorId($id);
+//         return view('Vuelo.Show', compact('vuelo'));
+//     }
 
-        $precio = $this->getPrecioByRuta($request->idAeropuertoOrigen, $request->idAeropuertoDestino);
-        $request->merge(['Precio' => $precio]);
 
-        $vuelo->update([
-            'idAvion' => $request->IdAvion,
-            'idAeropuertoOrigen' => $request->idAeropuertoOrigen,
-            'idAeropuertoDestino' => $request->idAeropuertoDestino,
-            'FechaSalida' => $request->FechaSalida,
-            'FechaLlegada' => $request->FechaLlegada,
-            'Precio' => $request->Precio,
-            'Estado' => $request->Estado,
-        ]);
-
-        return redirect()->route('vuelo.index')
-                         ->with('success', 'Vuelo actualizado correctamente');
+    // Mostrar formulario para editar vuelo
+    public function edit($id)
+    {
+        $vuelo = Vuelo::obtenerPorId($id);
+        $aviones = Avion::listar();
+        $aeropuertos = Aeropuerto::listar();
+        return view('Vuelo.Edit', compact('vuelo', 'aviones', 'aeropuertos'));
     }
 
+    // Mostrar formulario para eliminar vuelo
+    public function delete($id)
+    {
+        $vuelo = Vuelo::obtenerPorId($id);
+        return view('Vuelo.Delete', compact('vuelo'));
+    }
 
+    // Guardar un nuevo vuelo
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'idAvion' => 'required|integer|exists:aviones,idAvion',
-            'idAeropuertoOrigen' => 'required|integer|exists:aeropuertos,idAeropuerto',
-            'idAeropuertoDestino' => 'required|integer|exists:aeropuertos,idAeropuerto|different:idAeropuertoOrigen',
+            'idAeropuertoOrigen' => 'required|integer|exists:aeropuerto,idAeropuerto',
+            'idAeropuertoDestino' => 'required|integer|exists:aeropuerto,idAeropuerto|different:idAeropuertoOrigen',
             'FechaSalida' => 'required|date|after_or_equal:today',
             'FechaLlegada' => 'nullable|date|after:FechaSalida',
             'Precio' => 'required|numeric|min:0',
@@ -192,12 +150,10 @@ class VueloController extends Controller
         }
 
         // Generar ID automático si no se proporciona
-        //$data = $request->all();
         $data = $request->except('_token');
 
-       // Generar ID automático (MAX + 1)
+        // Generar ID automático (MAX + 1)
         if (!isset($data['idVuelo']) || empty($data['idVuelo'])) {
-            // Usamos el query builder de Laravel, que es más limpio y seguro que DB::select
             $maxId = DB::table('vuelo')->max('idVuelo');
             $data['idVuelo'] = $maxId + 1;
         }
@@ -208,23 +164,46 @@ class VueloController extends Controller
             'idAeropuertoOrigen' => $data['idAeropuertoOrigen'],
             'idAeropuertoDestino' => $data['idAeropuertoDestino'],
             'FechaSalida' => $data['FechaSalida'],
-            // FechaLlegada puede ser null si no se proporcionó
             'FechaLlegada' => $data['FechaLlegada'] ?? null,
             'Precio' => $data['Precio'],
             'Estado' => $data['Estado'],
-         ];
-         
-         Vuelo::create($insertData);
+        ];
+
+        Vuelo::create($insertData);
 
         return redirect()->route('vuelos.index')->with('success', 'Vuelo creado exitosamente.');
     }
 
-    // Eliminar un vuelo
-    public function destroy(Vuelo $vuelo)
+    // Actualizar un vuelo
+    public function update(Request $request, $id)
     {
+        $validator = Validator::make($request->all(), [
+            'idAvion' => 'required|integer|exists:avion,idAvion',
+            'idAeropuertoOrigen' => 'required|integer|exists:aeropuerto,idAeropuerto',
+            'idAeropuertoDestino' => 'required|integer|exists:aeropuerto,idAeropuerto|different:idAeropuertoOrigen',
+            'FechaSalida' => 'required|date|after_or_equal:today',
+            'FechaLlegada' => 'nullable|date|after:FechaSalida',
+            'Precio' => 'required|numeric|min:0',
+            'Estado' => 'required|string|max:45',
+        ]);
+
+        if ($validator->fails()) {
+            return redirect()->back()->withErrors($validator)->withInput();
+        }
+
+        $vuelo = Vuelo::findOrFail($id);
+        $vuelo->update($request->all());
+
+        return redirect()->route('vuelos.index')->with('success', 'Vuelo actualizado exitosamente.');
+    }
+
+    // Eliminar un vuelo
+    public function destroy($id)
+    {
+        $vuelo = Vuelo::findOrFail($id);
         $vuelo->delete();
 
-        return redirect()->route('vuelo.index')
+        return redirect()->route('vuelos.index')
                          ->with('success', 'Vuelo eliminado correctamente');
     }
 

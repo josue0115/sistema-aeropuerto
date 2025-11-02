@@ -78,6 +78,9 @@ class BoletoController extends Controller
 
             $data = $request->all();
 
+            // Agregar el ID del usuario logueado
+            $data['user_id'] = auth()->id();
+
             // Generar ID único si no se proporciona
             if (empty($data['idBoleto'])) {
                 $data['idBoleto'] = rand(100000, 999999);
@@ -89,7 +92,7 @@ class BoletoController extends Controller
             $totalActual = session('total_acumulado', 0);
             session(['total_acumulado' => $totalActual + $data['Total']]);
 
-            // Verificar si se presionó el botón "Siguiente: Servicios"
+            // Verificar si se presionó el botón "Finalizar Reserva"
             if ($request->input('action') === 'next') {
                 // Guardar el ID del boleto creado en la sesión
                 session(['boleto_creado' => $boletoId]);
@@ -143,7 +146,7 @@ class BoletoController extends Controller
     //     }
     //     return view('boletos.edit', compact('boleto'));
     // }
-    public function edit($boleto)
+    public function edit(Boleto $boleto)
     {
         return view('boletos.edit', compact('boleto'));
     }
@@ -154,7 +157,7 @@ class BoletoController extends Controller
     public function update(Request $request, $boleto)
     {
         $id = is_object($boleto) ? $boleto->idBoleto : $boleto;
-       $validatedData = $request->validate([
+        $validatedData = $request->validate([
             'idVuelo' => 'nullable|integer',
             'idPasajero' => 'nullable|integer',
             'FechaCompra' => 'nullable|date',
@@ -164,6 +167,9 @@ class BoletoController extends Controller
             'Impuesto' => 'nullable|numeric',
             'Total' => 'required|numeric',
         ]);
+
+        // Agregar el ID del usuario logueado
+        $validatedData['user_id'] = auth()->id();
 
         // $data = $request->all();
         // $data['Total'] = ($data['Precio'] * $data['Cantidad']) - $data['Descuento'] + $data['Impuesto'];

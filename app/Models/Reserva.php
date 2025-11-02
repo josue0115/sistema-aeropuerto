@@ -18,7 +18,8 @@ class Reserva extends Model
         'FechaReserva',
         'FechaVuelo',
         'MontoAnticipado',
-        'Estado'
+        'Estado',
+        'user_id'
     ];
 
     public static function listar()
@@ -33,27 +34,29 @@ class Reserva extends Model
 
     public static function insertar($data)
     {
-        return DB::select('CALL Sp_Insertar_Reserva(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Insertar_Reserva(?, ?, ?, ?, ?, ?, ?, ?)', [
             $data['idReserva'],
             $data['idPasajero'],
             $data['idVuelo'],
             $data['FechaReserva'],
             $data['FechaVuelo'],
             $data['MontoAnticipado'],
-            $data['Estado']
+            $data['Estado'],
+            $data['user_id']
         ]);
     }
 
     public static function actualizar($id, $data)
     {
-        return DB::select('CALL Sp_Actualizar_Reserva(?, ?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL Sp_Actualizar_Reserva(?, ?, ?, ?, ?, ?, ?, ?)', [
             $id,
             $data['idPasajero'],
             $data['idVuelo'],
             $data['FechaReserva'],
             $data['FechaVuelo'],
             $data['MontoAnticipado'],
-            $data['Estado']
+            $data['Estado'],
+            $data['user_id']
         ]);
     }
 

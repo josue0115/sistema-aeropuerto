@@ -14,13 +14,14 @@ class Boleto extends Model
 
     protected $fillable = [
         'idBoleto',
-        'idVuelo',
+        'IdVuelo',
         'idPasajero',
         'FechaCompra',
         'Precio',
         'Cantidad',
         'Descuento',
-        'Impuesto'
+        'Impuesto',
+        'user_id'
     ];
 
     public static function listar()
@@ -35,7 +36,7 @@ class Boleto extends Model
 
     public static function insertar($data)
     {
-        $result = DB::select('CALL Sp_Insertar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+        $result = DB::select('CALL Sp_Insertar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
             $data['idBoleto'],
             $data['idVuelo'],
             $data['idPasajero'],
@@ -44,14 +45,15 @@ class Boleto extends Model
             $data['Cantidad'],
             $data['Descuento'],
             $data['Impuesto'],
-            $data['Total']
+            $data['Total'],
+            $data['user_id']
         ]);
         return $data['idBoleto']; // Retornar el ID del boleto insertado
     }
 
      public static function actualizar($id, $data)
      {
-         return DB::select('CALL Sp_Actualizar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?)', [
+         return DB::select('CALL Sp_Actualizar_Boleto(?, ?, ?, ?, ?, ?, ?, ?, ?, ?)', [
              $id,
              $data['idVuelo'],
              $data['idPasajero'],
@@ -60,7 +62,8 @@ class Boleto extends Model
              $data['Cantidad'],
              $data['Descuento'],
              $data['Impuesto'],
-             $data['Total']
+             $data['Total'],
+             $data['user_id']
          ]);
      }
   

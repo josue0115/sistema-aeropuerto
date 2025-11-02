@@ -66,7 +66,7 @@ class AeropuertoController extends Controller
         Aeropuerto::create($data);
 
         // Redirige a la misma página de Listar usando la ruta con nombre
-        return redirect()->route('aeropuertos.listar')
+        return redirect()->route('aeropuerto.listar')
                          ->with('success', 'Aeropuerto creado correctamente');
     }
 
@@ -82,13 +82,38 @@ class AeropuertoController extends Controller
 
         $aeropuerto->update($request->except('IdAeropuerto'));
 
-        return redirect()->route('aeropuertos.listar')
+        return redirect()->route('aeropuerto.listar')
                          ->with('success', 'Aeropuerto actualizado correctamente');
     }
 
     // Eliminar un aeropuerto
     public function destroy(Aeropuerto $aeropuerto)
     {
+        // Crear backup en JSON antes de eliminar
+        $backupData = [
+            'IdAeropuerto' => $aeropuerto->IdAeropuerto,
+            'NombreAeropuerto' => $aeropuerto->NombreAeropuerto,
+            'Pais' => $aeropuerto->Pais,
+            'Ciudad' => $aeropuerto->Ciudad,
+            'Estado' => $aeropuerto->Estado,
+            'created_at' => $aeropuerto->created_at,
+            'updated_at' => $aeropuerto->updated_at,
+            'deleted_at' => now(),
+            'deleted_by' => 'Sistema',
+            'action' => 'DELETE'
+        ];
+
+        $filename = 'aeropuerto_backup_' . $aeropuerto->IdAeropuerto . '_' . now()->format('Y-m-d_H-i-s') . '.json';
+        $path = base_path('backup/' . $filename);
+
+        // Asegurar que el directorio existe
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($path, json_encode($backupData, JSON_PRETTY_PRINT));
+
         $aeropuerto->delete();
 
         return redirect()->route('aeropuerto.listar')

@@ -47,7 +47,7 @@ class PersonalController extends Controller
             'Cargo' => 'required|max:20',
             'FechaIngreso' => 'required|date|after_or_equal:today',
             'Estado' => 'nullable|max:50',
-            'Telefono' => 'required|integer',
+            'Telefono' => 'required|numeric|digits_between:8,15',
             'Correo' => 'required|email|max:45',
             'Direccion' => 'required|max:45',
         ]);
@@ -86,7 +86,7 @@ class PersonalController extends Controller
             'Cargo' => 'required|max:20',
             'FechaIngreso' => 'required|date|after_or_equal:today',
             'Estado' => 'nullable|max:50',
-            'Telefono' => 'required|integer',
+            'Telefono' => 'required|numeric|digits_between:8,15',
             'Correo' => 'required|email|max:45',
             'Direccion' => 'required|max:45',
         ]);

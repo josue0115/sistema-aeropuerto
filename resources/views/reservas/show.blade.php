@@ -7,6 +7,9 @@
             <div class="card">
                 <div class="card-header">
                     <h4>Detalles de la Reserva
+                        <a href="{{ route('reservas.pdf', $reserva->idReserva) }}" class="btn btn-primary float-end me-2" target="_blank">
+                            <i class="fas fa-download"></i> Descargar PDF
+                        </a>
                         <a href="{{ route('reservas.index') }}" class="btn btn-secondary float-end">Volver</a>
                     </h4>
                 </div>

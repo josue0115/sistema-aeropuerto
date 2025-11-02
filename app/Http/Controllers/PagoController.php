@@ -49,9 +49,9 @@ class PagoController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'numero_tarjeta' => 'required|string|regex:/^\d{16}$/',
+            'numero_tarjeta' => 'required|string|regex:/^\d{4} \d{4} \d{4} \d{4}$/',
             'fecha_expiracion' => 'required|string|regex:/^\d{2}\/\d{2}$/',
-            'cvv' => 'required|string|regex:/^\d{3}$/',
+            'cvv' => 'required|string|regex:/^\d{3,4}$/',
             'nombre_titular' => 'required|string|max:100',
         ]);
 
@@ -74,7 +74,8 @@ class PagoController extends Controller
             'MetodoPago' => 'Tarjeta de Crédito',
             'FechaPago' => now()->format('Y-m-d H:i:s'),
             'Estado' => 'Completado',
-            'Referencia' => $referenciaPago
+            'Referencia' => $referenciaPago,
+            'user_id' => auth()->id()
         ];
 
         $pagoId = Pago::insertar($pagoData);
@@ -97,7 +98,8 @@ class PagoController extends Controller
                 'monto' => $total,
                 'impuesto' => $impuesto,
                 'MontoTotal' => $montoTotal,
-                'Estado' => 'Emitida'
+                'Estado' => 'Emitida',
+                'user_id' => auth()->id()
             ];
 
             Factura::insertar($facturaData);
@@ -135,11 +137,30 @@ class PagoController extends Controller
      */
     public function edit(string $id)
     {
-        $pago = Pago::obtenerPorId($id);
-        if (empty($pago)) {
-            abort(404);
-        }
-        return view('pagos.edit', compact('pago'));
+        // $pago = Pago::obtenerPorId($id);
+        // if (empty($pago)) {
+        //     abort(404);
+        // }
+        // return view('pagos.edit', compact('pago'));
+      
+        // $pago = Pago::obtenerPorId($id);
+        //     if (empty($pago)) {
+        //         abort(404);
+        //     }
+        //     $pago = $pago[0];
+
+        //     dd($pago); // 👈 Agrega esto temporalmente
+        $result = Pago::obtenerPorId($id);
+
+    if (empty($result)) {
+        abort(404);
+    }
+
+    $pago = $result[0]; // ✅ toma el primer registro como objeto
+
+    return view('pagos.edit', compact('pago'));
+
+
     }
 
     /**
@@ -188,6 +209,7 @@ class PagoController extends Controller
             'boleto' => null,
             'servicios' => [],
             'asiento' => null,
+            'equipajes' => [],
             'total' => session('total_acumulado', 0)
         ];
 
@@ -209,16 +231,25 @@ class PagoController extends Controller
             ', [$detalles['boleto']->idBoleto]);
 
             $detalles['servicios'] = $servicios;
+
+            // Obtener equipajes del boleto
+            $equipajes = DB::select('
+                SELECT e.*, (e.Costo + e.CostoExtra) as Monto
+                FROM equipajes e
+                WHERE e.idBoleto = ?
+            ', [$detalles['boleto']->idBoleto]);
+
+            $detalles['equipajes'] = $equipajes;
         }
 
         // Obtener asiento (último creado)
         $asientos = DB::select('
-            SELECT a.*, v.idVuelo, v.Precio as precio_vuelo,
-                   ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+            SELECT a.*, v.IdVuelo, v.Precio as precio_vuelo,
+                   ao.NombreAeropuerto as aeropuerto_origen, ad.NombreAeropuerto as aeropuerto_destino
             FROM asientos a
             JOIN vuelo v ON a.idVuelo = v.idVuelo
-            LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
-            LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
+            LEFT JOIN aeropuerto ao ON v.IdAeropuertoOrigen = ao.IdAeropuerto
+            LEFT JOIN aeropuerto ad ON v.IdAeropuertoDestino = ad.IdAeropuerto
             ORDER BY a.idAsiento DESC LIMIT 1
         ');
 
@@ -245,11 +276,11 @@ class PagoController extends Controller
                 $pasajero = $pasajero[0];
                 // Obtener vuelo del boleto
                 $vuelo = DB::select('
-                    SELECT v.*, ao.Nombre as aeropuerto_origen, ad.Nombre as aeropuerto_destino
+                    SELECT v.*, ao.NombreAeropuerto as aeropuerto_origen, ad.NombreAeropuerto as aeropuerto_destino
                     FROM vuelo v
-                    LEFT JOIN aeropuertos ao ON v.idAeropuertoOrigen = ao.idAeropuerto
-                    LEFT JOIN aeropuertos ad ON v.idAeropuertoDestino = ad.idAeropuerto
-                    WHERE v.idVuelo = ?
+                    LEFT JOIN aeropuerto ao ON v.IdAeropuertoOrigen = ao.IdAeropuerto
+                    LEFT JOIN aeropuerto ad ON v.IdAeropuertoDestino = ad.IdAeropuerto
+                    WHERE v.IdVuelo = ?
                 ', [$boleto->idVuelo]);
 
                 if (!empty($vuelo)) {
@@ -265,6 +296,7 @@ class PagoController extends Controller
             'vuelo' => $vuelo,
             'servicios' => $detallesPago['servicios'] ?? [],
             'asiento' => $detallesPago['asiento'] ?? null,
+            'equipajes' => $detallesPago['equipajes'] ?? [],
         ];
 
         $pdf = Pdf::loadView('facturas.pdf', $data);

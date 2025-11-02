@@ -3,261 +3,365 @@
 @section('title', 'Procesar Pago')
 
 @section('content')
-<div class=" justify-content-center container-fluid py-4">
-    <div class="row justify-content-center">
-        <!-- Formulario de Pago -->
-        <div class="col-lg-5">
-            <div class="card shadow-sm">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-credit-card me-2"></i>
-                        Información de Pago
-                    </h4>
+<style>
+/* ======== ESTILOS GLOBALES ======== */
+body {
+  background-color: #f3f4f6;
+}
+.container-pago {
+  display: grid;
+  grid-template-columns: 1fr 0.8fr;
+  gap: 24px;
+  max-width: 1200px;
+  margin: 0 auto;
+   align-items: start;
+}
+.card-box, .summary-box {
+  background: #fff;
+  border-radius: 18px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  padding: 24px;
+}
+@media (max-width: 992px) {
+  .container-pago { grid-template-columns: 1fr; }
+}
+
+/* ======== TARJETA VISUAL ======== */
+.credit-preview {
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: #fff;
+  border-radius: 16px;
+  padding: 20px;
+  height: 180px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 20px;
+  box-shadow: 0 6px 20px rgba(37,99,235,0.3);
+}
+.credit-preview::after {
+  content: "";
+  position: absolute;
+  right: -30px;
+  top: -30px;
+  width: 150px;
+  height: 150px;
+  background: rgba(255,255,255,0.1);
+  border-radius: 50%;
+}
+.credit-number {
+  font-size: 1.4rem;
+  letter-spacing: 3px;
+  font-family: monospace;
+  margin-top: 25px;
+}
+.credit-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: end;
+  margin-top: 25px;
+  font-size: 0.9rem;
+}
+.credit-footer div { line-height: 1.2; }
+
+/* ======== FORMULARIO ======== */
+label {
+  font-size: 0.9rem;
+  font-weight: 600;
+  color: #374151;
+  display: block;
+  margin-bottom: 4px;
+}
+input {
+  width: 100%;
+  border: 1.8px solid #e5e7eb;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 0.95rem;
+  transition: all 0.2s ease;
+}
+input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(37,99,235,0.1);
+}
+.flex {
+  display: flex;
+  gap: 10px;
+}
+
+/* ======== BOTÓN Y ALERTA ======== */
+.btn-pago {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+  border: none;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 10px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.btn-pago:hover {
+  transform: translateY(-1px);
+  background: linear-gradient(90deg, #15803d, #166534);
+}
+.alert {
+  background: #ecfdf5;
+  border: 1px solid #bbf7d0;
+  color: #065f46;
+  font-size: 0.8rem;
+  padding: 8px 12px;
+  border-radius: 8px;
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* ======== RESUMEN ======== */
+.summary-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #111827;
+  margin-bottom: 10px;
+}
+.summary-line {
+  display: flex;
+  justify-content: space-between;
+  margin: 6px 0;
+  font-size: 0.95rem;
+}
+.summary-total {
+  background: linear-gradient(90deg, #16a34a, #15803d);
+  color: white;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  display: flex;
+  justify-content: space-between;
+  font-weight: 700;
+  margin-top: 18px;
+}
+.security-note {
+  background: #eff6ff;
+  border: 1px solid #bfdbfe;
+  padding: 10px 14px;
+  border-radius: 10px;
+  font-size: 0.8rem;
+  color: #1e40af;
+  margin-top: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+</style>
+
+<div class="container-pago">
+  <!-- 🧾 Información de pago -->
+  <div class="card-box">
+    <h3 class="text-lg font-bold text-gray-800 mb-1">Información de Pago</h3>
+    <p class="text-sm text-gray-500 mb-3">Completa los datos de tu tarjeta de forma segura</p>
+
+    <!-- Tarjeta visual -->
+    <div class="credit-preview">
+      <div class="text-xs opacity-80 flex justify-between">
+        <span>TARJETA</span>
+        <span id="card-brand">VISA / MASTERCARD</span>
+      </div>
+      <div id="card-display" class="credit-number">•••• •••• •••• ••••</div>
+      <div class="credit-footer">
+        <div>
+          <div style="font-size:0.7rem; opacity:0.8;">TITULAR</div>
+          <div id="holder-display">NOMBRE COMPLETO</div>
+        </div>
+        <div>
+          <div style="font-size:0.7rem; opacity:0.8;">VÁLIDO HASTA</div>
+          <div id="expiry-display">MM/AA</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Formulario -->
+    <form id="payment-form" action="{{ route('pagos.store') }}" method="POST">
+      @csrf
+      <div>
+        <label>Número de Tarjeta *</label>
+        <input id="numero_tarjeta" name="numero_tarjeta" maxlength="19" placeholder="#### #### #### ####" required>
+      </div>
+
+      <div class="flex">
+        <div class="w-1/2">
+          <label>Fecha Exp *</label>
+          <input id="fecha_expiracion" name="fecha_expiracion" maxlength="5" placeholder="MM/AA" required>
+        </div>
+        <div class="w-1/2">
+          <label>CVV *</label>
+          <input id="cvv" name="cvv" maxlength="4" placeholder="•••" required>
+        </div>
+      </div>
+
+      <div>
+        <label>Nombre del Titular *</label>
+        <input id="nombre_titular" name="nombre_titular" placeholder="Como aparece en la tarjeta" required>
+      </div>
+
+      <div class="alert"><i class="fas fa-lock"></i> Encriptación SSL de 256 bits · PCI DSS</div>
+
+      <div style="margin-top:16px; text-align:right;">
+        <a href="{{ route('pagos.index') }}" style="background: #e5e7eb; color: #374151; padding: 10px 16px; border-radius: 10px; font-weight: 600; margin-right: 10px; display: inline-flex; align-items: center; gap: 6px; text-decoration: none; ">
+                <i class="material-icons text-sm mr-2">arrow_back</i>Volver
+            </a>
+        <button type="submit" class="btn-pago"><i class="fas fa-lock mr-1"></i>Procesar Pago Seguro</button>
+      </div>
+    </form>
+  </div>
+
+<div class="w-full lg:w-1/3 " >
+    <div style="border-radius: 18px;" class="bg-white shadow-xl rounded-2xl overflow-hidden border border-gray-100 sticky top-6">
+        <div class="p-6 border-b border-gray-200" style="background: linear-gradient(to right, #f9fafb, #f3f4f6);">
+            <h5 class="text-xl font-bold text-gray-800 flex items-center">
+                <i class="fas fa-receipt mr-3 text-blue-600"></i>
+                Resumen del Pago
+            </h5>
+        </div>
+        <div class="p-6" style="max-height: 565px; overflow-y: scroll; -webkit-overflow-scrolling: touch;">
+            <!-- Boleto -->
+            @if($detallesPago['boleto'])
+            <div class="mb-6 pb-6 border-b border-gray-100">
+                <h6 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center">
+                    <i class="fas fa-plane-departure mr-2 text-blue-500"></i>
+                    Boleto
+                </h6>
+                <div class="flex justify-between items-center py-2 bg-blue-50 px-3 rounded-lg">
+                    <span class="text-gray-800 font-medium">Vuelo {{ $detallesPago['boleto']->idVuelo }}</span>
+                    <span class="font-bold text-gray-900">${{ number_format($detallesPago['boleto']->Precio, 2) }}</span>
                 </div>
-                <div class="card-body">
-                    <form action="{{ route('pagos.store') }}" method="POST">
-                        @csrf
+                <p class="text-sm text-gray-500 mt-2 ml-3">
+                    <i class="far fa-user text-xs mr-1"></i>
+                    Pasajero: {{ $detallesPago['boleto']->idPasajero }}
+                </p>
+            </div>
+            @endif
 
-                        <div class="row">
-                            <!-- Número de Tarjeta -->
-                            <div class="col-12 mb-3">
-                                <label for="numero_tarjeta" class="form-label">Número de Tarjeta</label>
-                                <div class="input-group">
-                                    <span class="input-group-text"><i class="fas fa-credit-card"></i></span>
-                                    <input type="text" class="form-control @error('numero_tarjeta') is-invalid @enderror"
-                                           id="numero_tarjeta" name="numero_tarjeta"
-                                           placeholder="1234 5678 9012 3456"
-                                           value="{{ old('numero_tarjeta') }}"
-                                           maxlength="16" required>
-                                    @error('numero_tarjeta')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-                            </div>
+            <!-- Servicios -->
+            @if(!empty($detallesPago['servicios']))
+            <div class="mb-6 pb-6 border-b border-gray-100">
+                <h6 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center">
+                    <i class="fas fa-concierge-bell mr-2 text-purple-500"></i>
+                    Servicios Adicionales
+                </h6>
+                @foreach($detallesPago['servicios'] as $servicio)
+                <div class="flex justify-between items-center py-2 hover:bg-gray-50 px-3 rounded-lg transition-colors">
+                    <span class="text-gray-800">{{ $servicio->tipo_servicio }}</span>
+                    <span class="font-semibold text-gray-900">${{ number_format($servicio->CostoTotal, 2) }}</span>
+                </div>
+                @endforeach
+            </div>
+            @endif
 
-                            <!-- Fecha de Expiración y CVV -->
-                            <div class="col-md-6 mb-3">
-                                <label for="fecha_expiracion" class="form-label">Fecha de Expiración</label>
-                                <input type="text" class="form-control @error('fecha_expiracion') is-invalid @enderror"
-                                       id="fecha_expiracion" name="fecha_expiracion"
-                                       placeholder="MM/AA"
-                                       value="{{ old('fecha_expiracion') }}"
-                                       maxlength="5" required>
-                                @error('fecha_expiracion')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+            <!-- Asiento -->
+            @if($detallesPago['asiento'])
+            <div class="mb-6 pb-6 border-b border-gray-100">
+                <h6 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center">
+                    <i class="fas fa-chair mr-2 text-orange-500"></i>
+                    Asiento
+                </h6>
+                <div class="flex justify-between items-center py-2 bg-orange-50 px-3 rounded-lg">
+                    <span class="text-gray-800 font-medium">Asiento {{ $detallesPago['asiento']->NumeroAsiento }}</span>
+                    <span class="font-bold text-gray-900">${{ number_format($detallesPago['asiento']->precio_vuelo * 0.1, 2) }}</span>
+                </div>
+                <p class="text-sm text-gray-500 mt-2 ml-3">
+                    <i class="fas fa-route text-xs mr-1"></i>
+                    {{ $detallesPago['asiento']->aeropuerto_origen }} → {{ $detallesPago['asiento']->aeropuerto_destino }}
+                </p>
+            </div>
+            @endif
 
-                            <div class="col-md-6 mb-3">
-                                <label for="cvv" class="form-label">CVV</label>
-                                <input type="text" class="form-control @error('cvv') is-invalid @enderror"
-                                       id="cvv" name="cvv"
-                                       placeholder="123"
-                                       value="{{ old('cvv') }}"
-                                       maxlength="3" required>
-                                @error('cvv')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
+            <!-- Equipajes -->
+            @if(!empty($detallesPago['equipajes']))
+            <div class="mb-6 pb-6 border-b border-gray-100">
+                <h6 class="text-xs font-bold text-gray-500 mb-3 uppercase tracking-wider flex items-center">
+                    <i class="fas fa-suitcase-rolling mr-2 text-green-500"></i>
+                    Equipajes
+                </h6>
+                @foreach($detallesPago['equipajes'] as $equipaje)
+                <div class="bg-green-50 p-3 rounded-lg mb-2">
+                    <div class="flex justify-between items-center">
+                        <span class="text-gray-800 font-medium">{{ $equipaje->Dimensiones ?? 'N/A' }}</span>
+                        <span class="font-bold text-gray-900">${{ number_format($equipaje->Monto ?? 0, 2) }}</span>
+                    </div>
+                    <p class="text-xs text-gray-500 mt-1">
+                        <i class="fas fa-weight-hanging text-xs mr-1"></i>
+                        {{ $equipaje->Peso ?? 0 }}kg | {{ $equipaje->Dimensiones ?? 'N/A' }}
+                    </p>
+                </div>
+                @endforeach
+            </div>
+            @endif
 
-                            <!-- Nombre del Titular -->
-                            <div class="col-12 mb-4">
-                                <label for="nombre_titular" class="form-label">Nombre del Titular</label>
-                                <input type="text" class="form-control @error('nombre_titular') is-invalid @enderror"
-                                       id="nombre_titular" name="nombre_titular"
-                                       placeholder="Como aparece en la tarjeta"
-                                       value="{{ old('nombre_titular') }}"
-                                       required>
-                                @error('nombre_titular')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <!-- Botones -->
-                        <div class="d-flex justify-content-between">
-                            <a href="{{ route('reservas.create') }}" class="btn btn-secondary">
-                                <i class="fas fa-arrow-left me-2"></i>
-                                Volver
-                            </a>
-                            <button type="submit" class="btn btn-success btn-lg" id="btn-procesar-pago">
-                                <i class="fas fa-lock me-2"></i>
-                                Procesar Pago Seguro
-                            </button>
-                        </div>
-                    </form>
+            <!-- Cálculos -->
+            <div class="space-y-3 mb-6">
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-gray-600">Subtotal</span>
+                    <span class="font-semibold text-gray-900">${{ number_format($detallesPago['total'], 2) }}</span>
+                </div>
+                <div class="flex justify-between items-center py-2">
+                    <span class="text-gray-600">Impuesto (12% IVA)</span>
+                    <span class="font-semibold text-gray-900">${{ number_format($detallesPago['total'] * 0.12, 2) }}</span>
                 </div>
             </div>
-        </div>
 
-        <!-- Resumen del Pago -->
-        <div class="col-lg-4">
-            <div class="card shadow-sm sticky-top" style="top: 20px;">
-                <div class="card-header bg-light">
-                    <h5 class="mb-0">
-                        <i class="fas fa-receipt me-2"></i>
-                        Resumen del Pago
-                    </h5>
+            <!-- Total -->
+            <div class="text-white p-5 rounded-xl mb-6 shadow-lg" style="background: linear-gradient(to right, #16a34a, #15803d);">
+                <div class="flex justify-between items-center">
+                    <span class="text-lg font-bold">Total a Pagar</span>
+                    <span class="text-3xl font-bold">${{ number_format($detallesPago['total'] * 1.12, 2) }}</span>
                 </div>
-                <div class="card-body">
-                    <!-- Boleto -->
-                    @if($detallesPago['boleto'])
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">BOLETO</h6>
-                        <div class="d-flex justify-content-between">
-                            <span>Vuelo {{ $detallesPago['boleto']->idVuelo }}</span>
-                            <span>${{ number_format($detallesPago['boleto']->Precio, 2) }}</span>
+            </div>
+
+            <!-- Badge de Seguridad -->
+            <div class="p-5 rounded-xl border border-blue-100" style="background: linear-gradient(to bottom right, #eff6ff, #e0e7ff);">
+                <div class="flex items-start">
+                    <div class="flex-shrink-0 mr-3">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                            <i class="fas fa-shield-alt text-white"></i>
                         </div>
-                        <small class="text-muted">
-                            Pasajero: {{ $detallesPago['boleto']->idPasajero }}
-                        </small>
                     </div>
-                    @endif
-
-                    <!-- Servicios -->
-                    @if(!empty($detallesPago['servicios']))
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">SERVICIOS ADICIONALES</h6>
-                        @foreach($detallesPago['servicios'] as $servicio)
-                        <div class="d-flex justify-content-between mb-1">
-                            <span>{{ $servicio->tipo_servicio }}</span>
-                            <span>${{ number_format($servicio->CostoTotal, 2) }}</span>
-                        </div>
-                        @endforeach
-                    </div>
-                    @endif
-
-                    <!-- Asiento -->
-                    @if($detallesPago['asiento'])
-                    <div class="mb-3">
-                        <h6 class="text-muted mb-2">ASIENTO</h6>
-                        <div class="d-flex justify-content-between">
-                            <span>Asiento {{ $detallesPago['asiento']->NumeroAsiento }}</span>
-                            <span>${{ number_format($detallesPago['asiento']->precio_vuelo * 0.1, 2) }}</span>
-                        </div>
-                        <small class="text-muted">
-                            {{ $detallesPago['asiento']->aeropuerto_origen }} → {{ $detallesPago['asiento']->aeropuerto_destino }}
-                        </small>
-                    </div>
-                    @endif
-
-                    <hr>
-
-                    <!-- Subtotal -->
-                    <div class="d-flex justify-content-between">
-                        <span>Subtotal</span>
-                        <span>${{ number_format($detallesPago['total'], 2) }}</span>
-                    </div>
-
-                    <!-- Impuesto -->
-                    <div class="d-flex justify-content-between mb-2">
-                        <span>Impuesto (12 % IVA)</span>
-                        <span>${{ number_format($detallesPago['total'] * 0.12, 2) }}</span>
-                    </div>
-
-                    <hr>
-
-                    <!-- Total -->
-                    <div class="d-flex justify-content-between align-items-center">
-                        <strong class="h5 mb-0">Total a Pagar</strong>
-                        <strong class="h4 mb-0 text-success">${{ number_format($detallesPago['total'] * 1.12, 2) }}</strong>
-                    </div>
-
-                    <div class="mt-3 p-3 bg-light rounded">
-                        <small class="text-muted">
-                            <i class="fas fa-shield-alt me-1"></i>
-                            Pago seguro procesado por nuestro sistema bancario.
-                            Tus datos están protegidos con encriptación SSL.
-                        </small>
+                    <div>
+                        <p class="text-sm font-bold text-blue-900 mb-1">Pago 100% Seguro</p>
+                        <p class="text-xs text-blue-700 leading-relaxed">
+                            Tus datos están protegidos con encriptación SSL de última generación. No almacenamos información sensible.
+                        </p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
-</div>
+</div><!-- 💰 Resumen -->
 
-@push('scripts')
+
 <script>
-// Formatear número de tarjeta
-document.getElementById('numero_tarjeta').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    value = value.replace(/(\d{4})(?=\d)/g, '$1 ');
-    e.target.value = value.trim();
+document.addEventListener("DOMContentLoaded", () => {
+  const numero = document.getElementById('numero_tarjeta');
+  const nombre = document.getElementById('nombre_titular');
+  const fecha = document.getElementById('fecha_expiracion');
+  const cardDisplay = document.getElementById('card-display');
+  const holderDisplay = document.getElementById('holder-display');
+  const expiryDisplay = document.getElementById('expiry-display');
+  const cardBrand = document.getElementById('card-brand');
+
+  numero.addEventListener('input', e => {
+    let val = e.target.value.replace(/\D/g, '').substring(0,16);
+    e.target.value = val.replace(/(\d{4})(?=\d)/g, '$1 ').trim();
+    cardDisplay.textContent = e.target.value || '•••• •••• •••• ••••';
+    cardBrand.textContent = val.startsWith('4') ? 'VISA' : val.startsWith('5') ? 'MASTERCARD' : 'VISA / MASTERCARD';
+  });
+  nombre.addEventListener('input', e => holderDisplay.textContent = e.target.value.toUpperCase() || 'NOMBRE COMPLETO');
+  fecha.addEventListener('input', e => {
+    let val = e.target.value.replace(/\D/g, '').substring(0,4);
+    if (val.length >= 3) val = val.substring(0,2)+'/'+val.substring(2);
+    e.target.value = val;
+    expiryDisplay.textContent = val || 'MM/AA';
+  });
 });
-
-// Formatear fecha de expiración
-document.getElementById('fecha_expiracion').addEventListener('input', function(e) {
-    let value = e.target.value.replace(/\D/g, '');
-    if (value.length >= 2) {
-        value = value.substring(0, 2) + '/' + value.substring(2, 4);
-    }
-    e.target.value = value;
-});
-
-// Solo números para CVV
-document.getElementById('cvv').addEventListener('input', function(e) {
-    e.target.value = e.target.value.replace(/\D/g, '');
-});
-
-// Preloader para el botón de pago
-document.getElementById('btn-procesar-pago').addEventListener('click', function(e) {
-    const btn = this;
-    const form = btn.closest('form');
-
-    // Verificar que el formulario sea válido
-    if (!form.checkValidity()) {
-        form.reportValidity();
-        return;
-    }
-
-    // Mostrar preloader de pantalla completa
-    showFullscreenLoader();
-
-    // Mostrar el preloader por al menos 3 segundos antes de enviar el formulario
-    setTimeout(() => {
-        form.submit();
-    }, 3000);
-});
-
-// Función para mostrar preloader de pantalla completa
-function showFullscreenLoader() {
-    let loader = document.getElementById('fullscreen-loader');
-    if (!loader) {
-        loader = document.createElement('div');
-        loader.id = 'fullscreen-loader';
-        loader.innerHTML = `
-            <div style="
-                position: fixed;
-                top: 0;
-                left: 0;
-                width: 100%;
-                height: 100%;
-                background-color: rgba(255, 255, 255, 0.95);
-                display: flex;
-                justify-content: center;
-                align-items: center;
-                z-index: 9999;
-                flex-direction: column;
-                border: 2px solid #007bff;
-                border-radius: 10px;
-                box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-            ">
-                <img src="{{ asset('images/plane-loader.gif') }}" alt="Cargando..." style="width: 250px; height: 250px; margin-bottom: 20px;">
-                <h4 style="color: #007bff; font-weight: bold;">Procesando Pago...</h4>
-            </div>
-        `;
-        document.body.appendChild(loader);
-    }
-    loader.style.display = 'flex';
-}
-
-// Función para ocultar preloader de pantalla completa
-function hideFullscreenLoader() {
-    const loader = document.getElementById('fullscreen-loader');
-    if (loader) {
-        loader.style.display = 'none';
-    }
-}
 </script>
-@endpush
 @endsection

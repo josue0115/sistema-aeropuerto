@@ -1,55 +1,182 @@
+@extends('layouts.app')
+
+@section('page-title', 'Lista de Horarios')
+
+@section('content')
 <!DOCTYPE html>
 <html lang="es">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Lista de Horarios</title>
-    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- DataTables CSS -->
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    
+    <style>
+        /* Variables de color */
+        :root {
+            --color-primary: #1976D2; /* Azul */
+            --color-primary-light: #42A5F5;
+            --color-accent: #FF9800; /* Naranja para tiempo de espera */
+            --color-success: #38a169; /* Verde */
+            --color-danger: #E53E3E; /* Rojo */
+            --color-text-muted: #6c757d;
+        }
+
+        .material-card {
+            box-shadow: 0 4px 20px 0 rgba(0, 0, 0, 0.14), 0 7px 10px -5px rgba(33, 33, 33, 0.4);
+            border-radius: 6px;
+            margin-bottom: 30px;
+            background-color: white;
+            padding: 0; /* Quitamos padding del cuerpo de la card para la tabla */
+        }
+
+        .material-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            padding: 8px 16px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            user-select: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            transition: all 0.15s ease-in-out;
+            text-decoration: none;
+            color: white;
+        }
+
+        .material-btn-primary {
+            background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light));
+            border-color: var(--color-primary);
+        }
+
+        .material-btn-primary:hover {
+            opacity: 0.9;
+            color: white;
+        }
+
+        /* Estilos específicos para la tabla y sus filas */
+        #tablaHorarios thead th {
+            background-color: #f0f0f0;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        #tablaHorarios tbody tr:hover {
+            background-color: #f9f9f9;
+        }
+    </style>
 </head>
 <body>
-<div class="container mt-4">
-    <h1 class="mb-4">Lista de Horarios</h1>
-
-    <!-- Botón para crear -->
-    <a href="{{ route('horario.create') }}" class="btn btn-primary mb-3">Agregar Horario</a>
-
-    <!-- Tabla -->
-    <table id="tablaHorarios" class="table table-bordered">
-        <thead>
-            <tr>
-                <th>ID</th>
-                <th>Vuelo</th>
-                <th>Hora Salida</th>
-                <th>Hora Llegada</th>
-                <th>Tiempo Espera (min)</th>
-                <th>Estado</th>
-                <th>Acciones</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach($horarios as $horario)
-            <tr>
-                <td>{{ $horario->IdHorario }}</td>
-                <td>{{ $horario->vuelo->IdVuelo ?? 'N/A' }} - {{ $horario->vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} → {{ $horario->vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}</td>
-                <td>{{ $horario->HoraSalida }}</td>
-                <td>{{ $horario->HoraLlegada }}</td>
-                <td>{{ $horario->TiempoEspera }}</td>
-                <td>{{ $horario->Estado }}</td>
-                <td>
-                    <a href="{{ route('horario.show', $horario) }}" class="btn btn-info btn-sm">Ver</a>
-                    <a href="{{ route('horario.edit', $horario) }}" class="btn btn-warning btn-sm">Editar</a>
-                    <a href="{{ route('horario.delete', $horario) }}" class="btn btn-danger btn-sm">Eliminar</a>
-                </td>
-            </tr>
-            @endforeach
-        </tbody>
-    </table>
+<div class="container-fluid pt-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="material-card">
+                {{-- Card Header con Título --}}
+                <div class="card-header d-flex justify-content-between align-items-center" style="background: linear-gradient(135deg, var(--color-primary), var(--color-primary-light)); color: white; border: none; padding: 24px;">
+                    <h3 class="card-title mb-0" style="font-weight: 600; font-size: 1.5rem;">
+                        <i class="material-icons" style="vertical-align: middle; margin-right: 12px;">schedule</i>
+                        Gestión de Horarios
+                    </h3>
+                    <div class="card-tools">
+                        @if(auth()->user()->role === 'operador')
+                        <a href="{{ route('horario.create') }}" class="material-btn material-btn-primary">
+                            <i class="material-icons" style="font-size: 1rem; margin-right: 8px;">add</i>
+                            Nuevo Horario
+                        </a>
+                        @endif
+                    </div>
+                </div>
+                
+                {{-- Card Body con Tabla --}}
+                <div class="card-body" style="padding: 0;">
+                    <table id="tablaHorarios" class="table table-striped w-100">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Vuelo (Origen → Destino)</th>
+                                <th>Hora Salida</th>
+                                <th>Hora Llegada</th>
+                                <th>Tiempo Espera</th>
+                                <th>Estado</th>
+                                <th class="text-center">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @forelse($horarios ?? [] as $horario)
+                            <tr>
+                                <td>{{ $horario->IdHorario }}</td>
+                                <td>
+                                    <span style="font-weight: 500;">Vuelo #{{ $horario->vuelo->IdVuelo ?? 'N/A' }}</span>
+                                    <br>
+                                    <span style="font-size: 0.9em; color: var(--color-text-muted);">
+                                        {{ $horario->vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }}
+                                        <i class="material-icons" style="font-size: 0.8rem; vertical-align: middle;">arrow_forward</i>
+                                        {{ $horario->vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}
+                                    </span>
+                                </td>
+                                <td>{{ $horario->HoraSalida }}</td>
+                                <td>{{ $horario->HoraLlegada }}</td>
+                                <td style="font-weight: 600; color: var(--color-accent); font-size: 1.1rem; text-align: center;">
+                                    {{ $horario->TiempoEspera }} min
+                                </td>
+                                <td>
+                                    @php
+                                        $estadoClasses = match($horario->Estado) {
+                                            'Activo' => 'linear-gradient(135deg, #38a169, #48bb78)', // Verde
+                                            'Inactivo' => 'linear-gradient(135deg, #718096, #a0aec0)', // Gris
+                                            'Cancelado' => 'linear-gradient(135deg, #e53e3e, #f56565)', // Rojo
+                                            default => 'linear-gradient(135deg, #d69e2e, #ed8936)' // Naranja
+                                        };
+                                    @endphp
+                                    <span class="badge" style="background: {{ $estadoClasses }}; color: white; padding: 6px 12px; border-radius: 20px; font-weight: 500;">
+                                        {{ $horario->Estado }}
+                                    </span>
+                                </td>
+                                <td class="text-center" style="white-space: nowrap;">
+                                    <div class="btn-group" role="group" aria-label="Acciones">
+                                        {{-- Botón Ver --}}
+                                        <a href="{{ route('horario.show', $horario) }}" class="material-btn material-btn-primary" style="padding: 6px 12px; font-size: 0.8rem; margin-right: 4px;">
+                                            <i class="bi bi-eye" style="font-size: 1rem;"></i> 
+                                        </a>
+                                        
+                                        @if(auth()->user()->role === 'operador')
+                                        {{-- Botón Editar --}}
+                                        <a href="{{ route('horario.edit', $horario) }}" class="material-btn" style="background: linear-gradient(135deg, #d69e2e, #ed8936); color: white; padding: 6px 12px; font-size: 0.8rem; margin-right: 4px;">
+                                            <i class="bi bi-pencil-square" style="font-size: 1rem;"></i>
+                                        </a>
+                                        {{-- Botón Eliminar --}}
+                                        <a href="{{ route('horario.delete', $horario) }}" class="material-btn" style="background: linear-gradient(135deg, #e53e3e, #f56565); color: white; padding: 6px 12px; font-size: 0.8rem; border: none;" onclick="return confirm('¿Está seguro de eliminar este horario?')">
+                                            <i class="bi bi-trash" style="font-size: 1rem;"></i>
+                                        </a>
+                                        @endif
+                                    </div>
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="7" class="text-center" style="padding: 40px; color: var(--color-text-muted); font-style: italic;">
+                                    <i class="material-icons" style="font-size: 3rem; opacity: 0.5; display: block; margin-bottom: 16px;">schedule</i>
+                                    No hay horarios registrados en este momento.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
 </div>
+@endsection
 
-<!-- Scripts -->
+@section('scripts')
 <script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>
@@ -57,23 +184,19 @@
 
 <script>
 $(document).ready(function() {
+    // Asegurarse de que el ID de la tabla coincida con el script. Lo cambié a tablaHorarios en el HTML.
     $('#tablaHorarios').DataTable({
-        "language": {
-            "lengthMenu": "Mostrar _MENU_ entradas",
-            "zeroRecords": "No se encontraron resultados",
-            "info": "Mostrando _START_ a _END_ de _TOTAL_ entradas",
-            "infoEmpty": "Mostrando 0 a 0 de 0 entradas",
-            "infoFiltered": "(filtrado de _MAX_ entradas totales)",
-            "search": "Buscar:",
-            "paginate": {
-                "first": "Primero",
-                "last": "Último",
-                "next": "Siguiente",
-                "previous": "Anterior"
-            }
-        }
+        language: {
+            url: '//cdn.datatables.net/plug-ins/1.13.6/i18n/es-ES.json'
+        },
+        responsive: true,
+        pageLength: 10,
+        lengthMenu: [[5, 10, 25, 50, -1], [5, 10, 25, 50, "Todos"]],
+        columnDefs: [
+            { orderable: false, targets: -1 } // Deshabilita la ordenación en la columna de Acciones
+        ],
+        scrollX: true // Útil para tablas con muchas columnas
     });
 });
 </script>
-</body>
-</html>
+@endsection

@@ -1,98 +1,148 @@
-<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Editar Personal</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-</head>
-<body>
-<div class="container mt-4">
-    <h1 class="mb-4">Editar Personal</h1>
+@extends('layouts.app')
 
-    <!-- Modal Editar -->
-    <div class="modal fade show" id="modalEditar" tabindex="-1" aria-labelledby="modalEditarLabel" aria-hidden="false" style="display: block;">
-      <div class="modal-dialog">
-        <div class="modal-content">
-          <form method="POST" action="{{ route('personal.update', $personal->IdPersonal) }}">
-            @csrf
-            @method('PUT')
-            <div class="modal-header">
-              <h5 class="modal-title" id="modalEditarLabel">Editar Personal</h5>
-              <a href="{{ route('personal.listar') }}" class="btn-close"></a>
+@section('page-title', 'Editar Personal')
+
+@section('content')
+<div class="container mx-auto px-4 py-8">
+    <div class="mb-6">
+        <div class="flex items-center justify-between mb-4">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-1 flex items-center">
+                    <i class="material-icons text-orange-600 mr-2 text-3xl">edit</i>
+                    Editar Personal: {{ $personal->Nombre }} {{ $personal->Apellido }}
+                </h1>
+                <p class="text-gray-600 text-lg">Modifique la información del empleado ID **#{{ $personal->IdPersonal }}**.</p>
             </div>
-            <div class="modal-body">
-                <div class="mb-3">
-                    <label>Nombre</label>
-                    <input type="text" class="form-control" value="{{ $personal->Nombre }}" readonly>
-                </div>
-                <div class="mb-3">
-                    <label>Apellido</label>
-                    <input type="text" class="form-control" value="{{ $personal->Apellido }}" readonly>
-                </div>
-                <div class="mb-3">
-                    <label>Cargo</label>
-                    <select name="Cargo" class="form-select" required>
-                        <option value="">Seleccione</option>
-                        <option value="Piloto" {{ $personal->Cargo == 'Piloto' ? 'selected' : '' }}>Piloto</option>
-                        <option value="Copiloto" {{ $personal->Cargo == 'Copiloto' ? 'selected' : '' }}>Copiloto</option>
-                        <option value="Azafata" {{ $personal->Cargo == 'Azafata' ? 'selected' : '' }}>Azafata</option>
-                        <option value="Mecánico" {{ $personal->Cargo == 'Mecánico' ? 'selected' : '' }}>Mecánico</option>
-                        <option value="Administrador" {{ $personal->Cargo == 'Administrador' ? 'selected' : '' }}>Administrador</option>
-                        <option value="Recepcionista" {{ $personal->Cargo == 'Recepcionista' ? 'selected' : '' }}>Recepcionista</option>
-                        <option value="Seguridad" {{ $personal->Cargo == 'Seguridad' ? 'selected' : '' }}>Seguridad</option>
-                        <option value="Limpieza" {{ $personal->Cargo == 'Limpieza' ? 'selected' : '' }}>Limpieza</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label>Fecha Ingreso</label>
-                    <input type="date" name="FechaIngreso" class="form-control" value="{{ $personal->FechaIngreso }}" min="{{ date('Y-m-d') }}" required>
-                </div>
-                <div class="mb-3">
-                    <label>Salario (Q)</label>
-                    <input type="number" name="Salario" class="form-control" readonly>
-                </div>
-                <div class="mb-3">
-                    <label>Estado</label>
-                    <select name="Estado" class="form-select">
-                        <option value="Activo" {{ $personal->Estado == 'Activo' ? 'selected' : '' }}>Activo</option>
-                        <option value="Inactivo" {{ $personal->Estado == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
-                    </select>
-                </div>
-                <div class="mb-3">
-                    <label>Teléfono</label>
-                    <input type="number" name="Telefono" class="form-control" value="{{ $personal->Telefono }}" required>
-                </div>
-                <div class="mb-3">
-                    <label>Correo</label>
-                    <input type="email" name="Correo" class="form-control" value="{{ $personal->Correo }}" required>
-                </div>
-                <div class="mb-3">
-                    <label>Dirección</label>
-                    <input type="text" name="Direccion" class="form-control" value="{{ $personal->Direccion }}" required>
-                </div>
-            </div>
-            <div class="modal-footer">
-              <a href="{{ route('personal.listar') }}" class="btn btn-secondary">Cancelar</a>
-              <button type="submit" class="btn btn-primary">Actualizar</button>
-            </div>
-          </form>
+            <a href="{{ route('personal.listar') }}" class="material-btn material-btn-secondary flex items-center">
+                <i class="material-icons text-sm mr-2">arrow_back</i>
+                Volver a la Lista
+            </a>
         </div>
-      </div>
+    </div>
+    
+    <div class="material-card shadow-xl rounded-lg max-w-4xl mx-auto">
+        <div class="p-6">
+            <form method="POST" action="{{ route('personal.update', $personal->IdPersonal) }}">
+                @csrf
+                @method('PUT')
+                
+                <h5 class="text-xl font-semibold text-gray-700 border-b pb-3 mb-6">Detalles del Empleado</h5>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="Nombre" class="block text-sm font-medium text-gray-700 mb-1">Nombre</label>
+                        <input type="text" id="Nombre" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" value="{{ $personal->Nombre }}" readonly>
+                    </div>
+                    <div>
+                        <label for="Apellido" class="block text-sm font-medium text-gray-700 mb-1">Apellido</label>
+                        <input type="text" id="Apellido" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" value="{{ $personal->Apellido }}" readonly>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div class="col-span-1">
+                        <label for="Cargo" class="block text-sm font-medium text-gray-700 mb-1">Cargo *</label>
+                        <select id="Cargo" name="Cargo" class="form-select @error('Cargo') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" required>
+                            <option value="">Seleccione</option>
+                            <option value="Piloto" {{ old('Cargo', $personal->Cargo) == 'Piloto' ? 'selected' : '' }}>Piloto</option>
+                            <option value="Copiloto" {{ old('Cargo', $personal->Cargo) == 'Copiloto' ? 'selected' : '' }}>Copiloto</option>
+                            <option value="Azafata" {{ old('Cargo', $personal->Cargo) == 'Azafata' ? 'selected' : '' }}>Azafata</option>
+                            <option value="Mecánico" {{ old('Cargo', $personal->Cargo) == 'Mecánico' ? 'selected' : '' }}>Mecánico</option>
+                            <option value="Administrador" {{ old('Cargo', $personal->Cargo) == 'Administrador' ? 'selected' : '' }}>Administrador</option>
+                            <option value="Recepcionista" {{ old('Cargo', $personal->Cargo) == 'Recepcionista' ? 'selected' : '' }}>Recepcionista</option>
+                            <option value="Seguridad" {{ old('Cargo', $personal->Cargo) == 'Seguridad' ? 'selected' : '' }}>Seguridad</option>
+                            <option value="Limpieza" {{ old('Cargo', $personal->Cargo) == 'Limpieza' ? 'selected' : '' }}>Limpieza</option>
+                        </select>
+                        @error('Cargo')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div class="col-span-1">
+                        <label for="Salario" class="block text-sm font-medium text-gray-700 mb-1">Salario (Q) *</label>
+                        <input type="number" step="0.01" id="Salario" name="Salario" class="form-input w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-100 cursor-not-allowed" value="{{ old('Salario', $personal->Salario) }}" readonly>
+                        <p class="text-xs text-gray-500 mt-1">Se auto-calcula según el cargo.</p>
+                        @error('Salario')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    
+                    <div class="col-span-1">
+                        <label for="FechaIngreso" class="block text-sm font-medium text-gray-700 mb-1">Fecha Ingreso *</label>
+                        <input type="date" id="FechaIngreso" name="FechaIngreso" class="form-input @error('FechaIngreso') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" min="{{ date('Y-m-d') }}" value="{{ old('FechaIngreso', $personal->FechaIngreso) }}" required>
+                        @error('FechaIngreso')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <h5 class="text-xl font-semibold text-gray-700 border-b pb-3 mb-6 mt-8">Información de Contacto</h5>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <label for="Telefono" class="block text-sm font-medium text-gray-700 mb-1">Teléfono *</label>
+                        <input type="number" id="Telefono" name="Telefono" class="form-input @error('Telefono') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" value="{{ old('Telefono', $personal->Telefono) }}" required>
+                        @error('Telefono')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Correo" class="block text-sm font-medium text-gray-700 mb-1">Correo *</label>
+                        <input type="email" id="Correo" name="Correo" class="form-input @error('Correo') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" value="{{ old('Correo', $personal->Correo) }}" required>
+                        @error('Correo')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
+                    <div>
+                        <label for="Direccion" class="block text-sm font-medium text-gray-700 mb-1">Dirección *</label>
+                        <input type="text" id="Direccion" name="Direccion" class="form-input @error('Direccion') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500" value="{{ old('Direccion', $personal->Direccion) }}" required>
+                        @error('Direccion')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Estado" class="block text-sm font-medium text-gray-700 mb-1">Estado</label>
+                        <select id="Estado" name="Estado" class="form-select @error('Estado') border-red-500 @enderror w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="Activo" {{ old('Estado', $personal->Estado) == 'Activo' ? 'selected' : '' }}>Activo</option>
+                            <option value="Inactivo" {{ old('Estado', $personal->Estado) == 'Inactivo' ? 'selected' : '' }}>Inactivo</option>
+                        </select>
+                        @error('Estado')
+                            <p class="text-red-500 text-xs mt-1">{{ $message }}</p>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="flex justify-start mt-8 pt-6 border-t border-gray-200">
+                    <button type="submit" class="material-btn material-btn-primary flex items-center px-6" style="background: linear-gradient(90deg, #f59e0b, #d97706);">
+                        <i class="material-icons text-sm mr-2">save</i>
+                        Actualizar Personal
+                    </button>
+                    <a href="{{ route('personal.listar') }}" class="material-btn material-btn-secondary ml-3 flex items-center px-6">
+                        <i class="material-icons text-sm mr-2">cancel</i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-
-<!-- Scripts -->
-<script src="https://code.jquery.com/jquery-3.7.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+@endsection
+@section('scripts')
 <script>
-$(document).ready(function() {
-    // Auto-fill salario based on cargo
-    $('select[name="Cargo"]').change(function() {
-        var cargo = $(this).val();
-        var salario = 0;
+document.addEventListener('DOMContentLoaded', function() {
+    const cargoSelect = document.getElementById('Cargo');
+    const salarioInput = document.getElementById('Salario');
+
+    function actualizarSalario() {
+        const cargo = cargoSelect.value;
+        let salario = 0;
+        
+        // Lógica de cálculo de salario
         switch(cargo) {
             case 'Piloto': salario = 5000.00; break;
             case 'Copiloto': salario = 4000.00; break;
@@ -102,13 +152,20 @@ $(document).ready(function() {
             case 'Recepcionista': salario = 2000.00; break;
             case 'Seguridad': salario = 2200.00; break;
             case 'Limpieza': salario = 1800.00; break;
+            default: salario = 0.00;
         }
-        $('input[name="Salario"]').val(salario.toFixed(2));
-    });
-
-    // Set initial salario
-    $('select[name="Cargo"]').trigger('change');
+        
+        salarioInput.value = salario.toFixed(2);
+    }
+    
+    // 1. Inicializar el salario al cargar (usa el valor actual del empleado si no hay errores)
+    // Usamos el salario actual si el cargo ya está seleccionado, o lo recalculamos
+    if (!salarioInput.value) {
+        actualizarSalario();
+    }
+    
+    // 2. Event listener para actualizar el salario al cambiar el cargo
+    cargoSelect.addEventListener('change', actualizarSalario);
 });
 </script>
-</body>
-</html>
+@endsection

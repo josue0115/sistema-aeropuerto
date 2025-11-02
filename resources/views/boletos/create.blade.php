@@ -1,54 +1,116 @@
 @extends('layouts.app')
 
+@section('page-title', 'Crear Boleto - Sistema Aeropuerto')
+
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Nuevo Boleto</h4>
-                    @if(isset($vueloSeleccionado))
-                        <div class="alert alert-info mt-2">
-                            <strong>Vuelo Seleccionado:</strong> {{ $vueloSeleccionado->idVuelo }} -
-                            {{ $vueloSeleccionado->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vueloSeleccionado->aeropuertoDestino->Nombre ?? 'N/A' }}
-                            ({{ $vueloSeleccionado->FechaSalida }})
-                        </div>
-                    @endif
+<div class="container mx-auto px-4 py-8" style="max-height: 800px; overflow-y: scroll;">
+    <!-- Header Section -->
+    <div class="mb-3">
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    <i class="material-icons text-blue-600 mr-2">confirmation_number</i>
+                    Crear Boleto
+                </h1>
+                <p class="text-gray-600 text-lg">Complete la información del boleto</p>
+            </div>
+            <div class="flex space-x-3">
+                 @if(isset($vueloSeleccionado))
+                <a href="{{ route('pasajeros.create') }}" class="material-btn material-btn-secondary">
+                    <i class="material-icons text-sm mr-2">arrow_back</i>
+                    Volver a Pasajeros
+                </a>
+                @endif
+                 @if(in_array(auth()->user()->role, ['operador']))
+                <a href="{{ route('boletos.index') }}" class="material-btn material-btn-secondary">
+                    <i class="material-icons text-sm mr-2">list</i>
+                    Ver Boletos
+                </a>
+                @endif
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+        @if(isset($vueloSeleccionado))
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-green-600">flight</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Vuelo Seleccionado</h3>
+                        <p class="text-gray-600">
+                            #{{ $vueloSeleccionado->IdVuelo }} -
+                            {{ $vueloSeleccionado->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} →
+                            {{ $vueloSeleccionado->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}
+                        </p>
+                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($vueloSeleccionado->FechaSalida)->format('d/m/Y H:i') }}</p>
+                    </div>
                 </div>
-                <div class="card-body">
+            </div>
+        </div>
+        @endif
+
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-blue-600">person</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Información del Boleto</h3>
+                        <p class="text-gray-600">Complete todos los campos requeridos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="material-card">
+        <div class="p-6">
                     <form action="{{ route('boletos.store') }}" method="POST">
                         @csrf
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3" style="display: none;">
-                                <label for="idBoleto" class="form-label">ID Boleto</label>
-                                <input type="number" class="form-control @error('idBoleto') is-invalid @enderror" id="idBoleto" name="idBoleto" value="{{ old('idBoleto') }}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div style="display: none;">
+                                <label for="idBoleto" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">tag</i>ID Boleto
+                                </label>
+                                <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('idBoleto') border-red-500 @enderror" id="idBoleto" name="idBoleto" value="{{ old('idBoleto') }}">
                                 @error('idBoleto')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="idVuelo" class="form-label">Código Vuelo</label>
-                                <select class="form-control @error('idVuelo') is-invalid @enderror" id="idVuelo" name="idVuelo" required>
+                            <div>
+                                <label for="idVuelo" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">flight</i>Código Vuelo
+                                </label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('idVuelo') border-red-500 @enderror" id="idVuelo" name="idVuelo" required>
                                     <option value="">Seleccione un vuelo</option>
                                     @foreach($vuelos as $vuelo)
-                                        <option value="{{ $vuelo->idVuelo }}" data-precio="{{ $vuelo->Precio }}"
-                                                {{ (isset($vueloSeleccionado) && $vueloSeleccionado->idVuelo == $vuelo->idVuelo) || old('idVuelo') == $vuelo->idVuelo ? 'selected' : '' }}>
-                                            {{ $vuelo->idVuelo }} - {{ $vuelo->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vuelo->aeropuertoDestino->Nombre ?? 'N/A' }}
+                                        <option value="{{ $vuelo->IdVuelo }}" data-precio="{{ $vuelo->Precio }}"
+                                                {{ (isset($vueloSeleccionado) && $vueloSeleccionado->IdVuelo == $vuelo->IdVuelo) || old('IdVuelo') == $vuelo->IdVuelo ? 'selected' : '' }}>
+                                            {{ $vuelo->IdVuelo }} - {{ $vuelo->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} a {{ $vuelo->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}
                                         </option>
                                     @endforeach
                                 </select>
-                                @error('idVuelo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @error('IdVuelo')
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="idPasajero" class="form-label">Pasajero</label>
-                                <select class="form-control @error('idPasajero') is-invalid @enderror" id="idPasajero" name="idPasajero" required>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="idPasajero" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">person</i>Pasajero
+                                </label>
+                                <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('idPasajero') border-red-500 @enderror" id="idPasajero" name="idPasajero" required>
                                     <option value="">Seleccione un pasajero</option>
                                     @php
                                         $pasajerosCreados = session('pasajeros_creados', []);
@@ -71,80 +133,113 @@
                                     @endif
                                 </select>
                                 @error('idPasajero')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="FechaCompra" class="form-label">Fecha Compra</label>
-                                <input type="datetime-local" class="form-control @error('FechaCompra') is-invalid @enderror" id="FechaCompra" name="FechaCompra" value="{{ old('FechaCompra', date('Y-m-d\TH:i')) }}" min="{{ date('Y-m-d\TH:i') }}">
+                            <div>
+                                <label for="FechaCompra" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">event</i>Fecha Compra
+                                </label>
+                                <input type="datetime-local" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('FechaCompra') border-red-500 @enderror" id="FechaCompra" name="FechaCompra" value="{{ old('FechaCompra', date('Y-m-d\TH:i')) }}" min="{{ date('Y-m-d\TH:i') }}">
                                 @error('FechaCompra')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Precio" class="form-label">Precio</label>
-                                <input type="number" step="0.01" class="form-control @error('Precio') is-invalid @enderror" id="Precio" name="Precio" value="{{ old('Precio') }}" min="0" readonly>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="Precio" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">attach_money</i>Precio
+                                </label>
+                                <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Precio') border-red-500 @enderror" id="Precio" name="Precio" value="{{ isset($vueloSeleccionado) ? $vueloSeleccionado->Precio : old('Precio') }}" min="0" readonly>
                                 @error('Precio')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="Cantidad" class="form-label">Cantidad</label>
-                                <input type="number" step="0.01" class="form-control @error('Cantidad') is-invalid @enderror" id="Cantidad" name="Cantidad" value="{{ old('Cantidad', $cantidadDefault ?? 1) }}" min="0">
+                            <div>
+                                <label for="Cantidad" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">format_list_numbered</i>Cantidad
+                                </label>
+                                <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Cantidad') border-red-500 @enderror" id="Cantidad" name="Cantidad" value="{{ old('Cantidad', $cantidadDefault ?? 1) }}" min="0">
                                 @error('Cantidad')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Descuento" class="form-label">Descuento</label>
-                                <input type="number" step="0.01" class="form-control @error('Descuento') is-invalid @enderror" id="Descuento" name="Descuento" value="{{ old('Descuento') }}" readonly>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                            <div>
+                                <label for="Descuento" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">local_offer</i>Descuento
+                                </label>
+                                <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Descuento') border-red-500 @enderror" id="Descuento" name="Descuento" value="{{ old('Descuento') }}" readonly>
                                 @error('Descuento')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
 
-                            <div class="col-md-6 mb-3">
-                                <label for="Impuesto" class="form-label">Impuesto</label>
-                                <input type="number" step="0.01" class="form-control @error('Impuesto') is-invalid @enderror" id="Impuesto" name="Impuesto" value="{{ old('Impuesto') }}" readonly>
+                            <div>
+                                <label for="Impuesto" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">account_balance</i>Impuesto
+                                </label>
+                                <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Impuesto') border-red-500 @enderror" id="Impuesto" name="Impuesto" value="{{ old('Impuesto') }}" readonly>
                                 @error('Impuesto')
-                                    <div class="invalid-feedback">{{ $message }}</div>
+                                    <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Total" class="form-label">Total (Calculado automáticamente)</label>
-                                <input type="number" step="0.01" class="form-control" id="Total" name="Total" readonly>
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                            <div>
+                                <label for="Total" class="block text-sm font-medium text-gray-700 mb-1">
+                                    <i class="material-icons text-gray-500 mr-1 text-sm">calculate</i>Total (Calculado automáticamente)
+                                </label>
+                                <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" id="Total" name="Total" readonly>
                             </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary" name="action" value="create">Crear Boleto</button>
-                        <button type="button" class="btn btn-success" id="btn-siguiente-servicios">Siguiente: Servicios</button>
-                        <a href="{{ route('boletos.index') }}" class="btn btn-secondary">Cancelar</a>
+                        <!-- Action Buttons -->
+                        <div class="flex flex-row justify-center gap-4 mt-8 pt-6 border-t border-gray-200">
+                            @if(!isset($vueloSeleccionado))
+                                <button type="submit" class="material-btn material-btn-primary flex-1 justify-center" name="action" value="create">
+                                    <i class="material-icons text-sm mr-2">save</i>
+                                    Crear Boleto
+                                </button>
+                            @endif
+                            @if(isset($vueloSeleccionado))
+                               <button 
+                                    type="button" 
+                                    id="btn-siguiente-equipaje"
+                                    name="action"
+                                    value="next"
+                                    style="display: flex; align-items: center; justify-content: center; flex: 1; 
+                                        padding: 0.5rem 1rem; font-weight: 600; color: white; border-radius: 0.375rem; 
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.2); background: linear-gradient(to right, #22c55e, #059669); 
+                                        transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='linear-gradient(to right, #16a34a, #047857)';"
+                                    onmouseout="this.style.background='linear-gradient(to right, #22c55e, #059669)';"
+                                >
+                                    <i class="material-icons" style="font-size: 14px; margin-right: 0.5rem;">arrow_forward</i>
+                                    Siguiente: Equipajes
+                                </button>
+
+
+                            @endif
+                            
+
+                            <a href="{{ route('boletos.index') }}" class="material-btn material-btn-secondary flex-1 justify-center">
+                                <i class="material-icons text-sm mr-2">cancel</i>
+                                Cancelar
+                            </a>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
-
-    <!-- Navigation Buttons -->
-    <!-- <div class="container mt-4">
-        <div class="row">
-            <div class="col-12 text-center">
-                <a href="{{ route('pasajeros.create') }}" class="btn btn-warning btn-lg me-2">Anterior: Pasajeros</a>
-                <a href="{{ route('servicios.create') }}" class="btn btn-success btn-lg">Siguiente: Servicios</a>
-            </div>
-        </div>
-    </div> -->
 </div>
 @endsection
 
@@ -157,8 +252,10 @@
         const descuentoInput = document.getElementById('Descuento');
         const impuestoInput = document.getElementById('Impuesto');
         const totalInput = document.getElementById('Total');
-        const btnSiguiente = document.getElementById('btn-siguiente-servicios');
+        const btnSiguienteEquipaje = document.getElementById('btn-siguiente-equipaje');
         const form = document.querySelector('form');
+        const pasajeroSelect = document.getElementById('idPasajero');
+        const fechaCompraInput = document.getElementById('FechaCompra');
 
         function calcularDescuento(cantidad) {
             if (cantidad >= 5 && cantidad < 10) return 0.05;
@@ -173,13 +270,12 @@
 
         function calcularTotal() {
             const precio = parseFloat(precioInput.value) || 0;
-            const cantidad = parseFloat(cantidadInput.value) || 0;
+            const cantidad = parseFloat(cantidadInput.value) || 1;
 
             const subtotal = precio * cantidad;
-            const descuentoPorcentaje = calcularDescuento(cantidad);
-            const descuento = subtotal * descuentoPorcentaje;
-            const impuesto = calcularImpuesto(subtotal);
-            const total = subtotal - descuento + impuesto;
+            const descuento = 0;
+            const impuesto = subtotal * 0.12;
+            const total = subtotal + impuesto;
 
             descuentoInput.value = descuento.toFixed(2);
             impuestoInput.value = impuesto.toFixed(2);
@@ -191,33 +287,101 @@
             const selectedOption = vueloSelect.options[vueloSelect.selectedIndex];
             const precio = selectedOption.getAttribute('data-precio') || 0;
             precioInput.value = precio;
-            calcularTotal();
+            if (precio > 0) {
+                calcularTotal();
+            }
         });
 
         // Eventos para calcular automáticamente en tiempo real
         const events = ['input', 'change', 'keyup', 'blur'];
         events.forEach(event => {
-            cantidadInput.addEventListener(event, calcularTotal);
+            cantidadInput.addEventListener(event, function() {
+                if (precioInput.value && precioInput.value > 0) {
+                    calcularTotal();
+                }
+            });
         });
 
-        // Calcular inicialmente
-        calcularTotal();
+        // Calcular inicialmente si hay precio
+        if (precioInput.value && precioInput.value > 0) {
+            calcularTotal();
+        }
 
-        // Auto-seleccionar vuelo si hay uno preseleccionado
+        // Auto-seleccionar vuelo si hay uno preseleccionado y asignar precio
         if (vueloSelect.value) {
             vueloSelect.dispatchEvent(new Event('change'));
         }
 
-        // Evento para el botón "Siguiente: Servicios"
-        btnSiguiente.addEventListener('click', function() {
+        // Si hay un vuelo preseleccionado desde la sesión, forzar la selección y cálculo
+        @if(isset($vueloSeleccionado))
+        setTimeout(() => {
+            vueloSelect.value = '{{ $vueloSeleccionado->IdVuelo }}';
+            // Asignar precio directamente desde el vuelo seleccionado
+            precioInput.value = '{{ $vueloSeleccionado->Precio }}';
+            vueloSelect.dispatchEvent(new Event('change'));
+            // Forzar cálculo después de seleccionar el vuelo
+            setTimeout(() => {
+                calcularTotal();
+            }, 200);
+        }, 100);
+        @endif
+
+        // Evento para el botón "Finalizar Reserva"
+        btnSiguienteEquipaje.addEventListener('click', function() {
+            // Verificar campos requeridos
+            if (!vueloSelect.value) {
+                alert('Por favor seleccione un vuelo.');
+                vueloSelect.focus();
+                return;
+            }
+
+            if (!pasajeroSelect.value) {
+                alert('Por favor seleccione un pasajero.');
+                pasajeroSelect.focus();
+                return;
+            }
+
+            if (!precioInput.value || precioInput.value <= 0) {
+                alert('El precio del vuelo no es válido. Por favor seleccione un vuelo.');
+                vueloSelect.focus();
+                return;
+            }
+
+            if (!cantidadInput.value || cantidadInput.value <= 0) {
+                alert('Por favor ingrese una cantidad válida.');
+                cantidadInput.focus();
+                return;
+            }
+
+            if (!totalInput.value || totalInput.value <= 0) {
+                alert('El total no se ha calculado correctamente.');
+                return;
+            }
+
+            // Deshabilitar botón para evitar múltiples envíos
+            btnSiguienteEquipaje.disabled = true;
+            btnSiguienteEquipaje.innerHTML = '<i class="material-icons text-sm mr-2">hourglass_empty</i>Procesando...';
+
             // Crear FormData con los datos del formulario
-            const formData = new FormData(form);
+            const formData = new FormData();
+
+            formData.append('idVuelo', vueloSelect.value);
+            formData.append('idPasajero', pasajeroSelect.value);
+            formData.append('Precio', precioInput.value);
+            formData.append('Cantidad', cantidadInput.value);
+            formData.append('Descuento', descuentoInput.value || '0');
+            formData.append('Impuesto', impuestoInput.value || '0');
+            formData.append('Total', totalInput.value);
+            formData.append('FechaCompra', fechaCompraInput.value);
             formData.append('action', 'next');
+
+            // Agregar el token CSRF
+            formData.append('_token', document.querySelector('meta[name="csrf-token"]').getAttribute('content'));
 
             // Mostrar preloader de pantalla completa
             showFullscreenLoader();
 
-            // Mostrar el preloader por al menos 3 segundos antes de enviar la petición AJAX
+            // Mostrar el preloader por al menos 2 segundos antes de enviar la petición AJAX
             setTimeout(() => {
                 // Enviar petición AJAX
                 fetch('{{ route("boletos.store") }}', {
@@ -232,6 +396,14 @@
                 .then(response => {
                     if (!response.ok) {
                         return response.json().then(err => {
+                            // Mostrar errores específicos de validación
+                            if (err.errors) {
+                                let errorMessages = 'Errores de validación:\n';
+                                for (let field in err.errors) {
+                                    errorMessages += `- ${err.errors[field].join(', ')}\n`;
+                                }
+                                throw new Error(errorMessages);
+                            }
                             throw new Error(err.message || 'Error en la solicitud');
                         });
                     }
@@ -242,25 +414,24 @@
                         // Abrir PDF en nueva pestaña
                         window.open('{{ url("/boletos") }}/' + data.boleto_id + '/pdf', '_blank');
 
-                        // Redirigir a servicios después de un breve delay
+                        // Redirigir a equipajes create después de un breve delay
                         setTimeout(() => {
-                            window.location.href = '{{ route("servicios.create") }}';
-                        }, 500);
+                            window.location.href = '{{ route("equipajes.create") }}';
+                        }, 1000);
                     } else {
                         hideFullscreenLoader();
                         alert('Error al crear el boleto');
                         btnSiguiente.disabled = false;
-                        btnSiguiente.innerHTML = 'Siguiente: Servicios';
+                        btnSiguiente.innerHTML = '<i class="material-icons text-sm mr-2">arrow_forward</i>Siguiente: Equipajes';
                     }
                 })
                 .catch(error => {
                     console.error('Error:', error);
                     hideFullscreenLoader();
                     alert('Error al procesar la solicitud: ' + error.message);
-                    btnSiguiente.disabled = false;
-                    btnSiguiente.innerHTML = 'Siguiente: Servicios';
+                    btnFinalizarReserva.disabled = false;
                 });
-            }, 3000);
+            }, 2000);
         });
     });
 

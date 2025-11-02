@@ -92,7 +92,7 @@ class EscalaController extends Controller
     {
         $escala->delete();
 
-        return redirect()->route('escala.index')
+        return redirect()->route('escala.delete')
                          ->with('success', 'Escala deleted successfully');
     }
 }

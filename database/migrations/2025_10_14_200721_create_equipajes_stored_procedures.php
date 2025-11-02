@@ -31,13 +31,14 @@ return new class extends Migration
                 IN p_idBoleto INT,
                 IN p_Costo DECIMAL(10,2),
                 IN p_Dimensiones VARCHAR(45),
+                IN p_Peso DECIMAL(5,2),
                 IN p_Monto DECIMAL(10,2),
                 IN p_CostoExtra DECIMAL(10,2),
                 IN p_Estado VARCHAR(10)
             )
             BEGIN
-                INSERT INTO equipajes (idEquipaje, idBoleto, Costo, Dimensiones, Monto, CostoExtra, Estado)
-                VALUES (p_idEquipaje, p_idBoleto, p_Costo, p_Dimensiones, p_Monto, p_CostoExtra, p_Estado);
+                INSERT INTO equipajes (idEquipaje, idBoleto, Costo, Dimensiones, Peso, Monto, CostoExtra, Estado)
+                VALUES (p_idEquipaje, p_idBoleto, p_Costo, p_Dimensiones, p_Peso, p_Monto, p_CostoExtra, p_Estado);
                 SELECT ROW_COUNT() as affected_rows;
             END
         ');
@@ -50,6 +51,7 @@ return new class extends Migration
                 IN p_idBoleto INT,
                 IN p_Costo DECIMAL(10,2),
                 IN p_Dimensiones VARCHAR(45),
+                IN p_Peso DECIMAL(5,2),
                 IN p_Monto DECIMAL(10,2),
                 IN p_CostoExtra DECIMAL(10,2),
                 IN p_Estado VARCHAR(10)
@@ -59,6 +61,7 @@ return new class extends Migration
                 SET idBoleto = p_idBoleto,
                     Costo = p_Costo,
                     Dimensiones = p_Dimensiones,
+                    Peso = p_Peso,
                     Monto = p_Monto,
                     CostoExtra = p_CostoExtra,
                     Estado = p_Estado

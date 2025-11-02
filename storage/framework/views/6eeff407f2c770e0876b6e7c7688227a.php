@@ -1,0 +1,703 @@
+    
+
+<?php $__env->startSection('page-title', 'Dashboard - Sistema Aeropuerto'); ?>
+
+<?php $__env->startSection('content'); ?>
+<!-- Statistics Cards -->
+ <?php if(in_array(auth()->user()->role, ['administrador', 'operador'])): ?>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+    <div class="material-stats-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-icon">
+                    <i class="material-icons">flight_takeoff</i>
+                </div>
+                <div class="stat-value"><?php echo e($stats['vuelos'] ?? 0); ?></div>
+                <div class="stat-label">VUELOS ACTIVOS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="material-stats-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-icon">
+                    <i class="material-icons">people</i>
+                </div>
+                <div class="stat-value"><?php echo e($stats['pasajeros'] ?? 0); ?></div>
+                <div class="stat-label">PASAJEROS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="material-stats-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-icon">
+                    <i class="material-icons">event_note</i>
+                </div>
+                <div class="stat-value"><?php echo e($stats['reservas'] ?? 0); ?></div>
+                <div class="stat-label">RESERVAS</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="material-stats-card">
+        <div class="flex items-center justify-between">
+            <div>
+                <div class="stat-icon">
+                    <i class="material-icons">attach_money</i>
+                </div>
+                <div class="stat-value">$<?php echo e(number_format($stats['ingresos'] ?? 0, 0)); ?></div>
+                <div class="stat-label">INGRESOS TOTALES</div>
+            </div>
+        </div>
+    </div>
+</div>
+<?php endif; ?>
+<?php if(in_array(auth()->user()->role, ['operador', 'cliente'])): ?>
+<!-- Main Content Grid -->
+ <div class="container mx-auto px-4">
+    <div class="grid grid-cols-1 lg:grid-cols-1 gap-6 max-w-7xl mx-auto">
+        <!-- Flight Search Card -->
+      <style>
+    /* Estilos de Card Material (reutilizando la definición global) */
+    .material-card {
+        background-color: white;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        transition: box-shadow 0.3s ease;
+    }
+    .material-card:hover {
+        box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+    }
+
+    /* Estilos de input y select Material */
+    .material-input {
+        width: 100%;
+        padding: 10px 12px;
+        border: 1px solid #BDBDBD; /* Gris claro de Material */
+        border-radius: 4px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+        appearance: none; /* Reset para selects */
+        background-color: #ffffff;
+    }
+    .material-input:focus {
+        outline: none;
+        border-color: #1976D2; /* Azul Material Focus */
+        box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2);
+    }
+    /* Estilo para el select con flecha personalizada */
+    .material-select-wrapper {
+        position: relative;
+    }
+    .material-select-wrapper::after {
+        content: 'expand_more';
+        font-family: 'Material Icons';
+        position: absolute;
+        top: 50%;
+        right: 12px;
+        transform: translateY(-50%);
+        color: #757575;
+        pointer-events: none;
+        font-size: 18px;
+    }
+
+    /* Estilos de botón primario (Azul) */
+    .material-btn-primary {
+        background-color: #1976D2; /* Azul Material 700 */
+        color: white;
+        padding: 10px 20px;
+        font-weight: 500;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+        transition: background-color 0.2s, box-shadow 0.2s;
+        border: none;
+    }
+    .material-btn-primary:hover {
+        background-color: #1565C0; /* Azul Material 800 */
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.25);
+    }
+
+    /* Estilos para etiquetas con icono */
+    .material-label {
+        display: flex;
+        align-items: center;
+        font-weight: 500;
+        color: #333;
+        margin-bottom: 6px;
+    }
+    .material-label i {
+        font-size: 18px;
+        margin-right: 6px;
+        color: #1976D2; /* Azul */
+    }
+</style>
+
+<div class="lg:col-span-2">
+    <div class="material-card">
+        <div class="p-6 border-b border-gray-100">
+            <h3 class="text-2xl font-bold text-gray-800 mb-1 flex items-center">
+                <i class="material-icons text-blue-600 mr-3 text-3xl">flight_search</i>
+                Buscar Vuelos
+            </h3>
+            <p class="text-gray-600">Encuentra y reserva tus próximos viajes de manera rápida y segura.</p>
+        </div>
+        
+        <div class="p-6">
+            <form id="busqueda-vuelos" method="GET" action="<?php echo e(route('vuelos.disponibles')); ?>">
+                
+                
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 mb-4">
+                    
+                    
+                    <div>
+                        <label for="tipo_viaje" class="material-label">
+                            <i class="material-icons">swap_horiz</i> Tipo de Viaje
+                        </label>
+                        <div class="material-select-wrapper">
+                            <select class="material-input" id="tipo_viaje" name="tipo_viaje" required>
+                                <option value="ida">Solo Ida</option>
+                                <option value="ida_vuelta">Ida y Vuelta</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    
+                    <div>
+                        <label for="origen" class="material-label">
+                            <i class="material-icons">flight_takeoff</i> Origen
+                        </label>
+                        <div class="material-select-wrapper">
+                            <select class="material-input" id="origen" name="origen" required>
+                                <option value="">Seleccionar Origen</option>
+                                <?php $__currentLoopData = $aeropuertos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $aeropuerto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($aeropuerto->IdAeropuerto); ?>"><?php echo e($aeropuerto->NombreAeropuerto); ?> (<?php echo e($aeropuerto->Ciudad); ?>, <?php echo e($aeropuerto->Pais); ?>)</option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    
+                    <div>
+                        <label for="destino" class="material-label">
+                            <i class="material-icons">flight_land</i> Destino
+                        </label>
+                        <div class="material-select-wrapper">
+                            <select class="material-input" id="destino" name="destino" required>
+                                <option value="">Seleccionar Destino</option>
+                                <?php $__currentLoopData = $aeropuertos; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $aeropuerto): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                    <option value="<?php echo e($aeropuerto->IdAeropuerto); ?>"><?php echo e($aeropuerto->NombreAeropuerto); ?> (<?php echo e($aeropuerto->Ciudad); ?>, <?php echo e($aeropuerto->Pais); ?>)</option>
+                                <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                            </select>
+                        </div>
+                    </div>
+                     
+                    
+                    <div>
+                        <label for="pasajeros" class="material-label">
+                            <i class="material-icons">group</i> Pasajeros
+                        </label>
+                        <div class="material-select-wrapper">
+                            <select class="material-input" id="pasajeros" name="pasajeros" required>
+                                <?php for($i = 1; $i <= 9; $i++): ?>
+                                    <option value="<?php echo e($i); ?>"><?php echo e($i); ?> Pasajero<?php echo e($i > 1 ? 's' : ''); ?></option>
+                                <?php endfor; ?>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+                
+                
+                <div class="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-4 items-end">
+                    
+                    
+                    <div class="md:col-span-1">
+                        <label for="fecha_ida" class="material-label">
+                            <i class="material-icons">calendar_today</i> Fecha de Ida
+                        </label>
+                        <input type="date" class="material-input" id="fecha_ida" name="fecha_ida" min="<?php echo e(date('Y-m-d')); ?>" required>
+                    </div>
+                    
+                    
+                    <div id="fecha_vuelta_container" style="display: none;" class="md:col-span-1">
+                        <label for="fecha_vuelta" class="material-label">
+                            <i class="material-icons">event_available</i> Fecha de Vuelta
+                        </label>
+                        <input type="date" class="material-input" id="fecha_vuelta" name="fecha_vuelta1" min="<?php echo e(date('Y-m-d')); ?>">
+                    </div>
+                    
+                    
+                    <div class="hidden lg:block"></div> 
+
+                    
+                    <div class="md:col-span-1 mt-4 md:mt-0">
+                        <button type="submit" class="w-full material-btn material-btn-primary flex items-center justify-center">
+                            <i class="material-icons text-white text-xl mr-2">search</i> Buscar Vuelos
+                        </button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Pequeño script para manejar la visibilidad del campo "Fecha de Vuelta"
+    document.addEventListener('DOMContentLoaded', function() {
+        const tipoViajeSelect = document.getElementById('tipo_viaje');
+        const fechaVueltaContainer = document.getElementById('fecha_vuelta_container');
+        const fechaVueltaInput = document.getElementById('fecha_vuelta');
+
+        function toggleFechaVuelta() {
+            if (tipoViajeSelect.value === 'ida_vuelta') {
+                fechaVueltaContainer.style.display = 'block';
+                fechaVueltaInput.setAttribute('required', 'required');
+            } else {
+                fechaVueltaContainer.style.display = 'none';
+                fechaVueltaInput.removeAttribute('required');
+            }
+        }
+
+        tipoViajeSelect.addEventListener('change', toggleFechaVuelta);
+
+        // Llamar en la carga inicial
+        toggleFechaVuelta();
+    });
+</script>
+
+        <?php if(in_array(auth()->user()->role, [ 'operador'])): ?>
+        <!-- Quick Actions Card -->
+        <!-- <div>
+            <div class="material-card">
+                <div class="p-6 border-b border-gray-200">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-2">
+                        <i class="material-icons text-green-600 mr-2">flash_on</i>
+                        Acciones Rápidas
+                    </h3>
+                    <p class="text-gray-600 text-sm">Operaciones comunes del sistema</p>
+                </div>
+                <div class="p-6 space-y-3">
+                    <a href="<?php echo e(route('reservas.create')); ?>" class="flex items-center p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-200">
+                        <i class="material-icons text-blue-600 mr-3">add_circle</i>
+                        <div>
+                            <div class="font-medium text-gray-800">Nueva Reserva</div>
+                            <div class="text-sm text-gray-600">Crear reserva de vuelo</div>
+                        </div>
+                    </a>
+                    <a href="<?php echo e(route('pasajeros.create')); ?>" class="flex items-center p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-200">
+                        <i class="material-icons text-green-600 mr-3">person_add</i>
+                        <div>
+                            <div class="font-medium text-gray-800">Registrar Pasajero</div>
+                            <div class="text-sm text-gray-600">Agregar nuevo pasajero</div>
+                        </div>
+                    </a>
+                    <a href="<?php echo e(route('boletos.create')); ?>" class="flex items-center p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-200">
+                        <i class="material-icons text-purple-600 mr-3">confirmation_number</i>
+                        <div>
+                            <div class="font-medium text-gray-800">Emitir Boleto</div>
+                            <div class="text-sm text-gray-600">Generar boleto de vuelo</div>
+                        </div>
+                    </a>
+                    <a href="<?php echo e(route('pagos.create')); ?>" class="flex items-center p-3 rounded-md hover:bg-gray-50 transition-colors border border-gray-200">
+                        <i class="material-icons text-orange-600 mr-3">payment</i>
+                        <div>
+                            <div class="font-medium text-gray-800">Procesar Pago</div>
+                            <div class="text-sm text-gray-600">Registrar pago de servicios</div>
+                        </div>
+                    </a>
+                </div>
+            </div>
+        </div> -->
+        <?php endif; ?>
+    </div>
+</div>
+<?php endif; ?>
+<!-- Module Cards Grid -->
+  <?php if(in_array(auth()->user()->role, [ 'operador'])): ?>
+<!-- <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 mt-8">
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-blue-600">flight_takeoff</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Gestión de Vuelos</h4>
+                    <p class="text-gray-600 text-sm">Administrar vuelos disponibles</p>
+                </div>
+            </div>
+                <a href="<?php echo e(route('vuelos.disponibles')); ?>" class="material-btn material-btn-primary w-full">
+                    <i class="material-icons text-sm mr-2">flight_takeoff</i>
+                    Listar Vuelos Disponibles
+                </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-green-600">people</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Pasajeros</h4>
+                    <p class="text-gray-600 text-sm">Administrar información de pasajeros</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('pasajeros.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Pasajeros
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-purple-600">event_note</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Reservas</h4>
+                    <p class="text-gray-600 text-sm">Sistema completo de reservas</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('reservas.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Reservas
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-orange-600">confirmation_number</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Boletos</h4>
+                    <p class="text-gray-600 text-sm">Emisión y control de boletos</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('boletos.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Boletos
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-red-600">room_service</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Servicios</h4>
+                    <p class="text-gray-600 text-sm">Servicios aeroportuarios</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('servicios.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Servicios
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-indigo-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-indigo-600">event_seat</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Asientos</h4>
+                    <p class="text-gray-600 text-sm">Gestión de asientos disponibles</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('asientos.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Asientos
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-teal-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-teal-600">payment</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Pagos</h4>
+                    <p class="text-gray-600 text-sm">Sistema de pagos y facturación</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('pagos.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Pagos
+            </a>
+        </div>
+    </div>
+
+    <div class="material-card">
+        <div class="p-6">
+            <div class="flex items-center mb-4">
+                <div class="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center mr-4">
+                    <i class="material-icons text-gray-600">receipt</i>
+                </div>
+                <div>
+                    <h4 class="text-lg font-semibold text-gray-800">Facturas</h4>
+                    <p class="text-gray-600 text-sm">Sistema de facturación</p>
+                </div>
+            </div>
+            <a href="<?php echo e(route('facturas.index')); ?>" class="material-btn material-btn-primary w-full">
+                Gestionar Facturas
+            </a>
+        </div>
+    </div>
+</div> -->
+
+<!-- Additional Modules Section -->
+<!-- <div class="mt-8">
+    <h3 class="text-2xl font-semibold text-gray-800 mb-6">Módulos Administrativos</h3>
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-cyan-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-cyan-600">business</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Aerolíneas</h4>
+                        <p class="text-gray-600 text-sm">Gestión de aerolíneas</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('aerolineas.index')); ?>" class="material-btn material-btn-primary w-full">
+                    <i class="material-icons text-sm mr-2">business</i>
+                    Gestionar Aerolíneas
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-lime-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-lime-600">location_city</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Aeropuertos</h4>
+                        <p class="text-gray-600 text-sm">Administrar aeropuertos</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('aeropuertos.index')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Aeropuertos
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-amber-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-amber-600">airplanemode_active</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Aviones</h4>
+                        <p class="text-gray-600 text-sm">Flota de aviones</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('avion.listar')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Aviones
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-rose-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-rose-600">engineering</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Personal</h4>
+                        <p class="text-gray-600 text-sm">Gestión del personal</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('personal.listar')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Personal
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-emerald-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-emerald-600">build</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Mantenimiento</h4>
+                        <p class="text-gray-600 text-sm">Programas de mantenimiento</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('mantenimiento.listar')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Mantenimiento
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-violet-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-violet-600">schedule</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Horarios</h4>
+                        <p class="text-gray-600 text-sm">Horarios de vuelos</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('horario.index')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Horarios
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-slate-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-slate-600">transfer_within_a_station</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Escalas</h4>
+                        <p class="text-gray-600 text-sm">Puntos de escala</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('escala.index')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Escalas
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-stone-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-stone-600">category</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Tipo Servicios</h4>
+                        <p class="text-gray-600 text-sm">Categorías de servicios</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('tipo_servicios.index')); ?>" class="material-btn material-btn-primary w-full">
+                    Gestionar Tipos
+                </a>
+            </div>
+        </div>
+
+        <div class="material-card">
+            <div class="p-6">
+                <div class="flex items-center mb-4">
+                    <div class="w-12 h-12 bg-yellow-100 rounded-lg flex items-center justify-center mr-4">
+                        <i class="material-icons text-yellow-600">analytics</i>
+                    </div>
+                    <div>
+                        <h4 class="text-lg font-semibold text-gray-800">Reportes</h4>
+                        <p class="text-gray-600 text-sm">Reportes del sistema</p>
+                    </div>
+                </div>
+                <a href="<?php echo e(route('reportes.disponibilidad-boletos')); ?>" class="material-btn material-btn-primary w-full">
+                    <i class="material-icons text-sm mr-2">analytics</i>
+                    Ver Reportes
+                </a>
+            </div>
+        </div>
+    </div>
+</div> -->
+ <?php endif; ?>
+<?php $__env->stopSection(); ?>
+
+<?php $__env->startSection('scripts'); ?>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const tipoViajeSelect = document.getElementById('tipo_viaje');
+    const fechaVueltaContainer = document.getElementById('fecha_vuelta_container');
+    const fechaVueltaInput = document.getElementById('fecha_vuelta');
+    const fechaIdaInput = document.getElementById('fecha_ida');
+    const origenSelect = document.getElementById('origen');
+    const destinoSelect = document.getElementById('destino');
+
+    // Mostrar/ocultar fecha de vuelta según tipo de viaje
+    tipoViajeSelect.addEventListener('change', function() {
+        if (this.value === 'ida_vuelta') {
+            fechaVueltaContainer.style.display = 'block';
+            fechaVueltaInput.required = true;
+        } else {
+            fechaVueltaContainer.style.display = 'none';
+            fechaVueltaInput.required = false;
+            fechaVueltaInput.value = '';
+        }
+    });
+
+    // Validar que origen y destino sean diferentes
+    function validarAeropuertos() {
+        if (origenSelect.value && destinoSelect.value && origenSelect.value === destinoSelect.value) {
+            destinoSelect.setCustomValidity('El destino debe ser diferente al origen');
+        } else {
+            destinoSelect.setCustomValidity('');
+        }
+    }
+
+    origenSelect.addEventListener('change', validarAeropuertos);
+    destinoSelect.addEventListener('change', validarAeropuertos);
+
+    // Validar fechas
+    fechaIdaInput.addEventListener('change', function() {
+        const fechaIda = new Date(this.value);
+        const hoy = new Date();
+        hoy.setHours(0, 0, 0, 0);
+
+        if (fechaIda < hoy) {
+            this.setCustomValidity('La fecha de ida debe ser hoy o posterior');
+        } else {
+            this.setCustomValidity('');
+        }
+
+        // Actualizar fecha mínima de vuelta
+        if (tipoViajeSelect.value === 'ida_vuelta') {
+            fechaVueltaInput.min = this.value;
+            if (fechaVueltaInput.value && new Date(fechaVueltaInput.value) < fechaIda) {
+                fechaVueltaInput.value = this.value;
+            }
+        }
+    });
+
+    fechaVueltaInput.addEventListener('change', function() {
+        const fechaVuelta = new Date(this.value);
+        const fechaIda = new Date(fechaIdaInput.value);
+
+        if (fechaVuelta < fechaIda) {
+            this.setCustomValidity('La fecha de vuelta debe ser posterior a la fecha de ida');
+        } else {
+            this.setCustomValidity('');
+        }
+    });
+
+    // Guardar datos en sessionStorage para usar en otras páginas
+    document.getElementById('busqueda-vuelos').addEventListener('submit', function(e) {
+        const formData = new FormData(this);
+        const searchData = {
+            tipo_viaje: formData.get('tipo_viaje'),
+            origen: formData.get('origen'),
+            destino: formData.get('destino'),
+            pasajeros: formData.get('pasajeros'),
+            fecha_ida: formData.get('fecha_ida'),
+            fecha_vuelta: formData.get('fecha_vuelta')
+        };
+        sessionStorage.setItem('busquedaVuelos', JSON.stringify(searchData));
+    });
+});
+</script>
+<?php $__env->stopSection(); ?>
+
+<?php echo $__env->make('layouts.app', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\repositorios\sistema-aeropuerto - copia (4)\resources\views/home.blade.php ENDPATH**/ ?>

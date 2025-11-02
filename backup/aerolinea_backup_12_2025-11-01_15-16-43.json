@@ -1,0 +1,12 @@
+{
+    "IdAerolinea": 12,
+    "NombreAerolinea": "American Airlines",
+    "Pais": "Colombia",
+    "Ciudad": "Bogot\u00e1",
+    "Estado": "Activo",
+    "created_at": "2025-11-01T21:12:20.000000Z",
+    "updated_at": "2025-11-01T21:12:20.000000Z",
+    "deleted_at": "2025-11-01T21:16:43.036488Z",
+    "deleted_by": "Sistema",
+    "action": "DELETE"
+}

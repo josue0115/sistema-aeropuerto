@@ -11,7 +11,13 @@ class Mantenimiento extends Model
     public $incrementing = true;
     protected $keyType = 'int';
 
+    public function getRouteKeyName()
+    {
+        return 'Id_mantenimiento';
+    }
+
     protected $fillable = [
+        'Id_mantenimiento',
         'IdAvion',
         'IdPersonal',
         'FechaIngreso',

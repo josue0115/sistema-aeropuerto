@@ -17,7 +17,8 @@ class AerolineaController extends Controller
     // Mostrar formulario para crear aerolinea
     public function create()
     {
-        return view('aerolinea.Create');
+        $iataPreview = $this->generarIataAerolinea();
+        return view('aerolinea.Create', compact('iataPreview'));
     }
 
     // Mostrar detalles de una aerolinea
@@ -29,13 +30,13 @@ class AerolineaController extends Controller
     // Mostrar formulario para editar aerolinea
     public function edit(Aerolinea $aerolinea)
     {
-        return view('aerolinea.Edit', compact('aerolinea'));
+        return view('Aerolinea.Edit', compact('aerolinea'));
     }
 
     // Mostrar confirmación para eliminar aerolinea
     public function delete(Aerolinea $aerolinea)
     {
-        return view('aerolinea.Delete', compact('aerolinea'));
+        return view('Aerolinea.Delete', compact('aerolinea'));
     }
 
     // Crear IATA automático con letras y números
@@ -45,29 +46,48 @@ class AerolineaController extends Controller
         $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
         $iata = $letters[rand(0, 25)] . $letters[rand(0, 25)] . rand(0, 9) . $letters[rand(0, 25)];
 
-        // Verificar que no exista
-        while (Aerolinea::where('IdAerolinea', $iata)->exists()) {
+        // Verificar que no exista en el campo IATA
+        while (Aerolinea::where('IATA', $iata)->exists()) {
             $iata = $letters[rand(0, 25)] . $letters[rand(0, 25)] . rand(0, 9) . $letters[rand(0, 25)];
         }
 
         return $iata;
     }
 
+    // Generar IdAerolinea único
+    private function generarIdAerolinea()
+    {
+        $letters = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+        $numbers = '0123456789';
+        $id = $letters[rand(0, 25)] . $letters[rand(0, 25)] . $numbers[rand(0, 9)] . $letters[rand(0, 25)];
+
+        // Verificar que no exista
+        while (Aerolinea::where('IdAerolinea', $id)->exists()) {
+            $id = $letters[rand(0, 25)] . $letters[rand(0, 25)] . $numbers[rand(0, 9)] . $letters[rand(0, 25)];
+        }
+
+        return $id;
+    }
+
     // Guardar
     public function store(Request $request)
     {
         $request->validate([
-            'NombreAerolinea' => 'required|max:50',
-            'Pais' => 'nullable|max:10',
+            'Nombre' => 'required|max:50',
             'Ciudad' => 'nullable|max:50',
+            'Pais' => 'nullable|max:50',
             'Estado' => 'nullable|max:10',
         ]);
 
+        $iata = $this->generarIataAerolinea();
+      //  $idAerolinea = $this->generarIdAerolinea();
+
         Aerolinea::create([
-            'IdAerolinea' => $this->generarIataAerolinea(),
-            'NombreAerolinea' => $request->NombreAerolinea,
-            'Pais' => $request->Pais,
+            //'IdAerolinea' => $idAerolinea,
+            'NombreAerolinea' => $request->Nombre,
+            'IATA' => $iata,
             'Ciudad' => $request->Ciudad,
+            'Pais' => $request->Pais,
             'Estado' => $request->Estado
         ]);
 
@@ -78,19 +98,48 @@ class AerolineaController extends Controller
     public function update(Request $request, Aerolinea $aerolinea)
     {
         $request->validate([
-            'NombreAerolinea' => 'required|max:50',
-            'Pais' => 'nullable|max:10',
+            'Nombre' => 'required|max:50',
+            //'IATA' => 'required|max:3|unique:aerolinea,IATA,' . $idaerolinea . ',' . $primaryKeyName,
+            //'IATA' => 'required|max:3|unique:aerolinea,IATA,' . $aerolinea->IdAerolinea . ',' . $primaryKeyName,
+            
+            'IATA' => 'required|max:10|:aerolinea,IATA,' . $aerolinea->IdAerolinea . ',IdAerolinea',
             'Ciudad' => 'nullable|max:50',
+            'Pais' => 'nullable|max:50',
             'Estado' => 'nullable|max:10',
         ]);
 
-        $aerolinea->update($request->except('IdAerolinea'));
+        $aerolinea->update($request->except(['idAerolinea', 'IATA']));
         return redirect()->route('aerolinea.Listar')->with('success', 'Aerolínea actualizada correctamente');
     }
 
     // Eliminar
     public function destroy(Aerolinea $aerolinea)
     {
+        // Crear backup en JSON antes de eliminar
+        $backupData = [
+            'IdAerolinea' => $aerolinea->IdAerolinea,
+            'NombreAerolinea' => $aerolinea->NombreAerolinea,
+            'Pais' => $aerolinea->Pais,
+            'Ciudad' => $aerolinea->Ciudad,
+            'Estado' => $aerolinea->Estado,
+            'created_at' => $aerolinea->created_at,
+            'updated_at' => $aerolinea->updated_at,
+            'deleted_at' => now(),
+            'deleted_by' => 'Sistema',
+            'action' => 'DELETE'
+        ];
+
+        $filename = 'aerolinea_backup_' . $aerolinea->IdAerolinea . '_' . now()->format('Y-m-d_H-i-s') . '.json';
+        $path = base_path('backup/' . $filename);
+
+        // Asegurar que el directorio existe
+        $directory = dirname($path);
+        if (!is_dir($directory)) {
+            mkdir($directory, 0755, true);
+        }
+
+        file_put_contents($path, json_encode($backupData, JSON_PRETTY_PRINT));
+
         $aerolinea->delete();
         return redirect()->route('aerolinea.Listar')->with('success', 'Aerolínea eliminada correctamente');
     }

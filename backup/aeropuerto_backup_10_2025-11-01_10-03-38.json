@@ -1,0 +1,12 @@
+{
+    "IdAeropuerto": "10",
+    "NombreAeropuerto": "Aeropuerto Internacional de Los \u00c1ngeles",
+    "Pais": "Estados Un",
+    "Ciudad": "Los \u00c1ngeles",
+    "Estado": "Activo",
+    "created_at": "2025-10-30T02:17:46.000000Z",
+    "updated_at": "2025-10-30T02:17:46.000000Z",
+    "deleted_at": "2025-11-01T16:03:38.293671Z",
+    "deleted_by": "Sistema",
+    "action": "DELETE"
+}

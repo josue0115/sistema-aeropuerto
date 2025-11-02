@@ -20,7 +20,8 @@ class Pago extends Model
         'MetodoPago',
         'FechaPago',
         'Estado',
-        'Referencia'
+        'Referencia',
+        'user_id'
     ];
 
     /**
@@ -44,12 +45,13 @@ class Pago extends Model
      */
     public static function insertar($data)
     {
-        return DB::select('CALL sp_insertar_pago(?, ?, ?, ?, ?)', [
+        return DB::select('CALL sp_insertar_pago(?, ?, ?, ?, ?, ?)', [
             $data['idReserva'],
             $data['Monto'],
             $data['MetodoPago'],
             $data['FechaPago'],
-            $data['Estado']
+            $data['Estado'],
+            $data['user_id']
         ]);
     }
 
@@ -58,13 +60,14 @@ class Pago extends Model
      */
     public static function actualizar($id, $data)
     {
-        return DB::select('CALL sp_actualizar_pago(?, ?, ?, ?, ?, ?)', [
+        return DB::select('CALL sp_actualizar_pago(?, ?, ?, ?, ?, ?, ?)', [
             $id,
             $data['idReserva'] ?? null,
             $data['Monto'] ?? null,
             $data['MetodoPago'] ?? null,
             $data['FechaPago'] ?? null,
-            $data['Estado'] ?? null
+            $data['Estado'] ?? null,
+            $data['user_id'] ?? null
         ]);
     }
 

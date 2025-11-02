@@ -11,7 +11,13 @@ class Escala extends Model
     public $incrementing = true;
     protected $keyType = 'int';
 
+    public function getRouteKeyName()
+    {
+        return 'IdEscala';
+    }
+
     protected $fillable = [
+        'IdEscala',
         'IdVuelo',
         'IdAeropuerto',
         'HoraSalida',

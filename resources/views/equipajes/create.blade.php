@@ -1,101 +1,197 @@
 @extends('layouts.app')
 
+@section('page-title', 'Crear Equipaje - Sistema Aeropuerto')
+
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Nuevo Equipaje
-                        <a href="{{ route('equipajes.index') }}" class="btn btn-secondary float-end">Volver</a>
-                    </h4>
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('equipajes.store') }}" method="POST" id="equipaje-form">
-                        @csrf
+<div class="container mx-auto px-4 py-8" style="max-height: 900px; overflow-y: scroll;">
+    <!-- Header Section -->
+    <div class="mb-3">
+        <div class="flex items-center justify-between mb-2">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    <i class="material-icons text-blue-600 mr-2">work</i>
+                    Crear Equipaje
+                </h1>
+                <p class="text-gray-600 text-lg">Complete la información del equipaje</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{{ route('servicios.create') }}" class="material-btn material-btn-secondary">
+                    <i class="material-icons text-sm mr-2">arrow_back</i>
+                    Volver a Servicios
+                </a>
+                @if(in_array(auth()->user()->role, ['operador']))
+                    <a href="{{ route('equipajes.index') }}" class="material-btn material-btn-secondary">
+                        <i class="material-icons text-sm mr-2">list</i>
+                        Ver Equipajes
+                    </a>
+                @endif
+            </div>
+        </div>
+    </div>
 
-                        <!-- ID Equipaje oculto -->
-                        <input type="hidden" id="idEquipaje" name="idEquipaje" value="">
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="idBoleto" class="form-label">Código Boleto</label>
-                                <select class="form-control @error('idBoleto') is-invalid @enderror" id="idBoleto" name="idBoleto" required>
-                                    <option value="">Seleccione un boleto</option>
-                                    @foreach($boletos as $boleto)
-                                        <option value="{{ $boleto->idBoleto }}" {{ old('idBoleto') == $boleto->idBoleto ? 'selected' : '' }}>
-                                            {{ $boleto->idBoleto }} - {{ $boleto->pasajero_nombre ?? 'N/A' }} {{ $boleto->pasajero_apellido ?? '' }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                                @error('idBoleto')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="Costo" class="form-label">Costo</label>
-                                <input type="number" step="0.01" min="0" class="form-control @error('Costo') is-invalid @enderror" id="Costo" name="Costo" value="{{ old('Costo') }}" required>
-                                @error('Costo')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Dimensiones" class="form-label">Dimensiones (ej: 50x30x20)</label>
-                                <input type="text" class="form-control @error('Dimensiones') is-invalid @enderror" id="Dimensiones" name="Dimensiones" value="{{ old('Dimensiones') }}" placeholder="50x30x20" pattern="[0-9x\s]+" title="Solo números y 'x' permitidos" required>
-                                @error('Dimensiones')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="Peso" class="form-label">Peso (kg)</label>
-                                <input type="number" step="0.01" min="0" class="form-control @error('Peso') is-invalid @enderror" id="Peso" name="Peso" value="{{ old('Peso') }}" required>
-                                @error('Peso')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="CostoExtra" class="form-label">Costo Extra</label>
-                                <input type="number" step="0.01" class="form-control" id="CostoExtra" name="CostoExtra" value="{{ old('CostoExtra', 0) }}" readonly>
-                                <small class="form-text text-muted">Calculado automáticamente: $30 por cada 23kg</small>
-                            </div>
-
-                            <div class="col-md-6 mb-3">
-                                <label for="Monto" class="form-label">Monto Total</label>
-                                <input type="number" step="0.01" class="form-control" id="Monto" name="Monto" value="{{ old('Monto') }}" readonly>
-                                <small class="form-text text-muted">Costo + Costo Extra</small>
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6 mb-3">
-                                <label for="Estado" class="form-label">Estado</label>
-                                <select class="form-control @error('Estado') is-invalid @enderror" id="Estado" name="Estado" required>
-                                    <option value="">Seleccione un estado</option>
-                                    <option value="Registrado" {{ old('Estado') == 'Registrado' ? 'selected' : '' }}>Registrado</option>
-                                    <option value="EnTransito" {{ old('Estado') == 'EnTransito' ? 'selected' : '' }}>En Tránsito</option>
-                                    <option value="Entregado" {{ old('Estado') == 'Entregado' ? 'selected' : '' }}>Entregado</option>
-                                    <option value="Perdido" {{ old('Estado') == 'Perdido' ? 'selected' : '' }}>Perdido</option>
-                                    <option value="Dañado" {{ old('Estado') == 'Dañado' ? 'selected' : '' }}>Dañado</option>
-                                </select>
-                                @error('Estado')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">Crear Equipaje</button>
-                        <a href="{{ route('equipajes.index') }}" class="btn btn-secondary">Cancelar</a>
-                    </form>
+    <!-- Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+        @if(isset($boletoCreado))
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-green-600">confirmation_number</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Boleto Seleccionado</h3>
+                        <p class="text-gray-600">
+                            #{{ $boletoCreado->idBoleto }} -
+                            Pasajero: {{ $boletoCreado->idPasajero }} - Vuelo: {{ $boletoCreado->idVuelo }}
+                        </p>
+                    </div>
                 </div>
             </div>
+        </div>
+        @endif
+
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-blue-600">work</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Información del Equipaje</h3>
+                        <p class="text-gray-600">Complete todos los campos requeridos</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Form Card -->
+    <div class="material-card">
+        <div class="p-6">
+            <form action="{{ route('equipajes.store') }}" method="POST" id="equipaje-form">
+                @csrf
+
+                <!-- ID Equipaje oculto -->
+                <input type="hidden" id="idEquipaje" name="idEquipaje" value="">
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="idBoleto" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">confirmation_number</i>Código Boleto
+                        </label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('idBoleto') border-red-500 @enderror" id="idBoleto" name="idBoleto" required>
+                            <option value="">Seleccione un boleto</option>
+                            @if(isset($boletoCreado))
+                                <option value="{{ $boletoCreado->idBoleto }}" selected>
+                                    {{ $boletoCreado->idBoleto }} - {{ $boletoCreado->idPasajero }}
+                                </option>
+                            @endif
+                            @foreach($boletos as $boleto)
+                                <option value="{{ $boleto->idBoleto }}" {{ old('idBoleto') == $boleto->idBoleto ? 'selected' : '' }}>
+                                    {{ $boleto->idBoleto }} - {{ $boleto->idPasajero ?? 'N/A' }} {{ $boleto->pasajero_apellido ?? '' }}
+                                </option>
+                            @endforeach
+                        </select>
+                        @error('idBoleto')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Costo" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">attach_money</i>Costo
+                        </label>
+                        <input type="number" value="0" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Costo') border-red-500 @enderror" id="Costo" name="Costo" value="{{ old('Costo') }}" required>
+                        @error('Costo')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="Dimensiones" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">straighten</i>Dimensiones (ej: 50x30x20)
+                        </label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Dimensiones') border-red-500 @enderror" id="Dimensiones" name="Dimensiones" value="{{ old('Dimensiones') }}" placeholder="50x30x20" pattern="[0-9x\s]+" title="Solo números y 'x' permitidos" >
+                        @error('Dimensiones')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    <div>
+                        <label for="Peso" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">scale</i>Peso (kg)
+                        </label>
+                        <input type="number" step="0.01" min="0" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Peso') border-red-500 @enderror" id="Peso" name="Peso" value="{{ old('Peso') ?? 0 }}" required >
+                        @error('Peso')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+                    <div>
+                        <label for="CostoExtra" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">add_circle</i>Costo Extra
+                        </label>
+                        <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" id="CostoExtra" name="CostoExtra" value="{{ old('CostoExtra', 0) }}" readonly>
+                        <small class="text-gray-500 text-sm">Calculado automáticamente: $30 por cada 23kg</small>
+                    </div>
+
+                    <div>
+                        <label for="Monto" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">calculate</i>Monto Total
+                        </label>
+                        <input type="number" step="0.01" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-gray-50" id="Monto" name="Monto" value="{{ old('Monto') }}" readonly>
+                        <small class="text-gray-500 text-sm">Costo + Costo Extra</small>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                    <div>
+                        <label for="Estado" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">info</i>Estado
+                        </label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 @error('Estado') border-red-500 @enderror" id="Estado" name="Estado" required>
+                            <option value="">Seleccione un estado</option>
+                            <option value="Registrado" {{ old('Estado', 'Registrado') == 'Registrado' ? 'selected' : '' }}>Registrado</option>
+                            <option value="EnTransito" {{ old('Estado') == 'EnTransito' ? 'selected' : '' }}>En Tránsito</option>
+                            <option value="Entregado" {{ old('Estado') == 'Entregado' ? 'selected' : '' }}>Entregado</option>
+                            <option value="Perdido" {{ old('Estado') == 'Perdido' ? 'selected' : '' }}>Perdido</option>
+                            <option value="Dañado" {{ old('Estado') == 'Dañado' ? 'selected' : '' }}>Dañado</option>
+                        </select>
+                        @error('Estado')
+                            <div class="text-red-500 text-sm mt-1">{{ $message }}</div>
+                        @enderror
+                    </div>
+                </div>
+
+                <!-- Action Buttons -->
+                <div class="flex flex-row justify-center gap-4 mt-8 pt-6 border-t border-gray-200">
+                    @if(!isset($boletoCreado))
+                    <button type="submit" class="material-btn material-btn-primary flex-1 justify-center">
+                        <i class="material-icons text-sm mr-2">save</i>
+                        Crear Equipaje
+                    </button>
+                    @endif
+                    @if(isset($boletoCreado))
+                    <button type="submit" name="action" value="next" style="display: flex; align-items: center; justify-content: center; flex: 1; 
+                                        padding: 0.5rem 1rem; font-weight: 600; color: white; border-radius: 0.375rem; 
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.2); background: linear-gradient(to right, #22c55e, #059669); 
+                                        transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='linear-gradient(to right, #16a34a, #047857)';"
+                                    onmouseout="this.style.background='linear-gradient(to right, #22c55e, #059669)';">
+                        <i class="material-icons text-sm mr-2">arrow_forward</i>
+                        Siguiente: Servicios
+                    </button>
+                    @endif
+                    <a href="{{ route('equipajes.index') }}" class="material-btn material-btn-secondary flex-1 justify-center">
+                        <i class="material-icons text-sm mr-2">cancel</i>
+                        Cancelar
+                    </a>
+                </div>
+            </form>
         </div>
     </div>
 </div>

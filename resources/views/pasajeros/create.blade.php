@@ -1,51 +1,111 @@
 @extends('layouts.app')
 
+@section('page-title', 'Crear Pasajeros - Sistema Aeropuerto')
+
 @section('content')
-<div class="container">
-    <div class="row">
-        <div class="col-md-12">
-            <div class="card">
-                <div class="card-header">
-                    <h4>Crear Pasajeros</h4>
-                    <p id="cantidad-display">Cantidad de personas: Cargando...</p>
-                    @if(isset($vueloSeleccionado))
-                        <div class="alert alert-info mt-2">
-                            <strong>Vuelo Seleccionado:</strong> {{ $vueloSeleccionado->idVuelo }} -
-                            {{ $vueloSeleccionado->aeropuertoOrigen->Nombre ?? 'N/A' }} a {{ $vueloSeleccionado->aeropuertoDestino->Nombre ?? 'N/A' }}
-                            ({{ $vueloSeleccionado->FechaSalida }})
-                        </div>
-                    @endif
-                </div>
-                <div class="card-body">
-                    <form action="{{ route('pasajeros.store') }}" method="POST" id="pasajeros-form">
-                        @csrf
-                        <div id="pasajeros-container">
-                            <!-- Los formularios de pasajeros se generarán aquí dinámicamente -->
-                            <input type="hidden" name="pasajeros[0][idPasajero]" value="{{ old('pasajeros.0.idPasajero', 1) }}">
-                        </div>
-                        <button type="submit" class="btn btn-primary" name="action" value="save">Crear Pasajeros</button>
-                        <button type="submit" class="btn btn-success" name="action" value="continue_to_boletos">Guardar y Continuar a Boletos</button>
-                        <a href="{{ route('pasajeros.index') }}" class="btn btn-secondary">Cancelar</a>
-                    </form>
-                </div>
+<div class="container mx-auto px-2 py-6">
+    <!-- Header Section -->
+    <div class="mb-1">
+        <div class="flex items-center justify-between mb-3">
+            <div>
+                <h1 class="text-3xl font-bold text-gray-800 mb-2">
+                    <i class="material-icons text-blue-600 mr-2">people</i>
+                    Crear Pasajeros
+                </h1>
+                <p class="text-gray-600 text-lg">Complete la información de los pasajeros</p>
+            </div>
+            <div class="flex space-x-3">
+                <a href="{{ route('vuelos.disponibles') }}" class="material-btn material-btn-secondary">
+                    <i class="material-icons text-sm mr-2">arrow_back</i>
+                    Volver a Vuelos
+                </a> 
+                @if(in_array(auth()->user()->role, ['operador']))
+                <a href="{{ route('pasajeros.index') }}" class="material-btn material-btn-secondary">
+                    <i class="material-icons text-sm mr-2">list</i>
+                    Ver Pasajeros
+                </a>
+                @endif
             </div>
         </div>
     </div>
 
-    <!-- Navigation Buttons -->
-    <!-- <div class="container-fluid mt-4">
-        <div class="row">
-            <div class="col-12">
-                <div class="d-flex flex-column flex-md-row justify-content-center gap-2">
-                    <a href="{{ route('vuelos.create') }}" class="btn btn-warning btn-lg">Anterior: Vuelos</a>
-                    <a href="{{ route('boletos.create') }}" class="btn btn-success btn-lg">Siguiente: Boletos</a>
-                    @if(request()->has('vuelo_id'))
-                        <a href="{{ route('vuelos.disponibles', ['origen' => session('busquedaVuelos.origen', ''), 'destino' => session('busquedaVuelos.destino', ''), 'fecha_ida' => session('busquedaVuelos.fecha_ida', ''), 'tipo_viaje' => session('busquedaVuelos.tipo_viaje', ''), 'pasajeros' => session('busquedaVuelos.pasajeros', '')]) }}" class="btn btn-info btn-lg">Regresar a Vuelos Disponibles</a>
-                    @endif
+    <!-- Info Cards -->
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-2">
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-blue-600">info</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Cantidad de Personas</h3>
+                        <p id="cantidad-display" class="text-gray-600">Cargando...</p>
+                    </div>
                 </div>
             </div>
         </div>
-    </div> -->
+
+        @if(isset($vueloSeleccionado))
+        <div class="material-card">
+            <div class="p-4">
+                <div class="flex items-center">
+                    <div class="w-10 h-10 bg-green-100 rounded-lg flex items-center justify-center mr-3">
+                        <i class="material-icons text-green-600">flight</i>
+                    </div>
+                    <div>
+                        <h3 class="font-semibold text-gray-800">Vuelo Seleccionado</h3>
+                        <p class="text-gray-600">
+                            #{{ $vueloSeleccionado->IdVuelo }} -
+                            {{ $vueloSeleccionado->aeropuertoOrigen->NombreAeropuerto ?? 'N/A' }} →
+                            {{ $vueloSeleccionado->aeropuertoDestino->NombreAeropuerto ?? 'N/A' }}
+                        </p>
+                        <p class="text-sm text-gray-500">{{ \Carbon\Carbon::parse($vueloSeleccionado->FechaSalida)->format('d/m/Y H:i') }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        @endif
+    </div>
+
+    <!-- Form Card -->
+    <div class="material-card">
+        <div class="p-6">
+            <form action="{{ route('pasajeros.store') }}" method="POST" id="pasajeros-form">
+                @csrf
+                <div id="pasajeros-container">
+                    <!-- Los formularios de pasajeros se generarán aquí dinámicamente -->
+                    <input type="hidden" name="pasajeros[0][idPasajero]" value="{{ old('pasajeros.0.idPasajero', 1) }}">
+                </div>
+
+                <!-- Action Buttons -->
+      <div class="flex flex-row justify-center gap-4 mt-8 pt-6 border-t border-gray-200">
+            @if(!isset($vueloSeleccionado)) 
+                <button type="submit" class="material-btn material-btn-primary flex-none px-6" name="action" value="save">
+                    <i class="material-icons text-sm mr-2">save</i>
+                    Crear Pasajeros
+                </button>
+            @endif
+            @if(isset($vueloSeleccionado)) 
+                <button type="submit" name="action" value="continue_to_boletos"style="display: flex; align-items: center; justify-content: center; flex: 1; 
+                                        padding: 0.5rem 1rem; font-weight: 600; color: white; border-radius: 0.375rem; 
+                                        box-shadow: 0 2px 6px rgba(0,0,0,0.2); background: linear-gradient(to right, #22c55e, #059669); 
+                                        transition: all 0.2s ease;"
+                                    onmouseover="this.style.background='linear-gradient(to right, #16a34a, #047857)';"
+                                    onmouseout="this.style.background='linear-gradient(to right, #22c55e, #059669)';">
+                    <i class="material-icons text-sm mr-2">arrow_forward</i>
+                    Guardar y Continuar a Boletos
+                </button>
+            @endif
+
+            <a href="{{ route('pasajeros.index') }}" class="material-btn material-btn-secondary flex-1 justify-center">
+                <i class="material-icons text-sm mr-2">cancel</i>
+                Cancelar
+            </a>
+        </div>
+
+            </form>
+        </div>
+    </div>
 </div>
 @endsection
 
@@ -60,28 +120,37 @@ document.addEventListener('DOMContentLoaded', function() {
 
     for (let i = 0; i < cantidadPersonas; i++) {
         const pasajeroDiv = document.createElement('div');
-        pasajeroDiv.className = 'pasajero-section mb-4';
+        pasajeroDiv.className = 'pasajero-section mb-6';
         pasajeroDiv.innerHTML = `
-            <h5>Pasajero ${i + 1}</h5>
-            <div class="row">
-                <div class="col-md-6 mb-3" style="display: none;">
-                    <label for="idPasajero_${i}" class="form-label">ID Pasajero</label>
-                    <input type="number" class="form-control" id="idPasajero_${i}" name="pasajeros[${i}][idPasajero]" value="${i + 1}" required>
+            <div class="bg-gray-50 p-4 rounded-lg mb-4">
+                <h6 class="text-lg font-semibold text-gray-800 mb-4 flex items-center">
+                    <i class="material-icons text-blue-600 mr-2">person</i>
+                    Pasajero ${i + 1}
+                </h6>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div style="display: none;">
+                        <label for="idPasajero_${i}" class="block text-sm font-medium text-gray-700 mb-1">ID Pasajero</label>
+                        <input type="number" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="idPasajero_${i}" name="pasajeros[${i}][idPasajero]" value="${i + 1}" required>
+                    </div>
+                    <div>
+                        <label for="Nombre_${i}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">person</i>Nombre
+                        </label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="Nombre_${i}" name="pasajeros[${i}][Nombre]" maxlength="45" required placeholder="Ingrese el nombre">
+                    </div>
+                    <div>
+                        <label for="Apellido_${i}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">person</i>Apellido
+                        </label>
+                        <input type="text" class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="Apellido_${i}" name="pasajeros[${i}][Apellido]" maxlength="45" required placeholder="Ingrese el apellido">
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="Nombre_${i}" class="form-label">Nombre</label>
-                    <input type="text" class="form-control" id="Nombre_${i}" name="pasajeros[${i}][Nombre]" maxlength="45" required>
-
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="Apellido_${i}" class="form-label">Apellido</label>
-                    <input type="text" class="form-control" id="Apellido_${i}" name="pasajeros[${i}][Apellido]" maxlength="45" required>
-                </div>
-            </div>
-            <div class="row">
-                <div class="col-md-4 mb-3">
-                    <label for="Pais_${i}" class="form-label">País</label>
-                    <select class="form-control" id="Pais_${i}" name="pasajeros[${i}][Pais]" required>
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-4">
+                    <div>
+                        <label for="Pais_${i}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">public</i>País
+                        </label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="Pais_${i}" name="pasajeros[${i}][Pais]" required>
                         <option value="">Seleccione un país</option>
                         <option value="México">México</option>
                         <option value="Estados Unidos">Estados Unidos</option>
@@ -273,9 +342,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <option value="Otros">Otros</option>
                     </select>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="TipoPasajero_${i}" class="form-label">Tipo Pasajero</label>
-                    <select class="form-control" id="TipoPasajero_${i}" name="pasajeros[${i}][TipoPasajero]" required>
+                    <div>
+                        <label for="TipoPasajero_${i}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">badge</i>Tipo Pasajero
+                        </label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="TipoPasajero_${i}" name="pasajeros[${i}][TipoPasajero]" required>
                         <option value="">Seleccione un tipo</option>
                         <option value="Adulto">Adulto</option>
                         <option value="Niño">Niño</option>
@@ -286,9 +357,11 @@ document.addEventListener('DOMContentLoaded', function() {
                         <option value="Discapacitado">Discapacitado</option>
                     </select>
                 </div>
-                <div class="col-md-4 mb-3">
-                    <label for="Estado_${i}" class="form-label">Estado</label>
-                    <select class="form-control" id="Estado_${i}" name="pasajeros[${i}][Estado]" required>
+                    <div>
+                        <label for="Estado_${i}" class="block text-sm font-medium text-gray-700 mb-1">
+                            <i class="material-icons text-gray-500 mr-1 text-sm">toggle_on</i>Estado
+                        </label>
+                        <select class="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" id="Estado_${i}" name="pasajeros[${i}][Estado]" required>
                         <option value="">Seleccione un estado</option>
                         <option value="Activo" selected>Activo</option>
                         <option value="Inactivo">Inactivo</option>
@@ -297,7 +370,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     </select>
                 </div>
             </div>
-
+        </div>
         `;
         container.appendChild(pasajeroDiv);
     }

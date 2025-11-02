@@ -25,12 +25,13 @@ class Asiento extends Model
 
     public static function listar()
     {
-        return DB::select('CALL Sp_Consulta_Asiento(NULL)');
+        return DB::select('CALL Sp_Consulta_Asiento(NULL)') ?? [];
     }
 
     public static function obtenerPorId($id)
     {
-        return DB::select('CALL Sp_Consulta_Asiento(?)', [$id]);
+        $result = DB::select('CALL Sp_Consulta_Asiento(?)', [$id]);
+        return $result ? $result : [];
     }
 
     public static function insertar($data)

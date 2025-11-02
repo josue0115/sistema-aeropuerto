@@ -11,33 +11,42 @@ class AvionController extends Controller
     // Listar aviones
     public function Listar()
     {
-        $aviones = Avion::with('aerolinea')->get(); // traemos info de la aerolinea
+        $aviones = Avion::with('aerolinea')->where('idAvion', '!=', '')->whereNotNull('IdAvion')->get(); // traemos info de la aerolinea, filtrando aviones con IdAvion no vacío y no nulo
         return view('Avion.Listar', compact('aviones'));
     }
 
     // Mostrar formulario para crear avión
     public function create()
     {
+        $placaPreview = $this->generatePlaca();
         $aerolineas = Aerolinea::all(); // para el combo box
-        return view('Avion.Create', compact('aerolineas'));
+        return view('Avion.Create', compact('aerolineas','placaPreview'));
     }
 
     // Mostrar detalles de un avión
     public function show(Avion $avion)
     {
+        $avion->load('aerolinea');
         return view('Avion.Show', compact('avion'));
     }
 
     // Mostrar formulario para editar avión
     public function edit(Avion $avion)
     {
+        // Si ya tiene placa, mostrar la existente; si no, generar preview
+        if (empty($avion->Placa)) {
+            $placaPreview = $this->generatePlaca();
+        } else {
+            $placaPreview = $avion->Placa;
+        }
         $aerolineas = Aerolinea::all(); // para el combo box
-        return view('Avion.Edit', compact('avion', 'aerolineas'));
+        return view('Avion.Edit', compact('avion', 'aerolineas', 'placaPreview'));
     }
 
     // Mostrar confirmación para eliminar avión
     public function delete(Avion $avion)
     {
+        $avion->load('aerolinea');
         return view('Avion.Delete', compact('avion'));
     }
 
@@ -53,10 +62,9 @@ class AvionController extends Controller
         ]);
 
         // Generar ID automático: letras y números
-        $idAvion = $this->generateIdAvion();
-        // Generar placa automática: letras y números
+       // // Generar placa automática: letras y números
         $placa = $this->generatePlaca();
-        $request->merge(['IdAvion' => $idAvion, 'Placa' => $placa]);
+        $request->merge(['Placa' => $placa]);
 
         Avion::create($request->all());
 
@@ -98,8 +106,13 @@ class AvionController extends Controller
             'Estado' => 'nullable|max:50',
         ]);
 
-        // Mantener la placa existente, no cambiar
-        $request->merge(['Placa' => $avion->Placa]);
+        // Generar placa si no tiene, de lo contrario mantener la existente
+        if (empty($avion->Placa)) {
+            $placa = $this->generatePlaca();
+        } else {
+            $placa = $avion->Placa;
+        }
+        $request->merge(['Placa' => $placa]);
 
         $avion->update($request->all());
 

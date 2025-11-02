@@ -7,6 +7,7 @@ use App\Models\Pasajero;
 use App\Models\Vuelo;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class ReservaController extends Controller
 {
@@ -15,7 +16,16 @@ class ReservaController extends Controller
      */
     public function index()
     {
-        $reservas = Reserva::listar();
+        $user = auth()->user();
+        if ($user->role === 'cliente') {
+            // Para clientes, filtrar reservas por user_id
+            $reservas = array_filter(Reserva::listar(), function($reserva) use ($user) {
+                return $reserva->user_id == $user->id;
+            });
+        } else {
+            // Para operadores y admins, mostrar todas
+            $reservas = Reserva::listar();
+        }
         return view('reservas.index', compact('reservas'));
     }
 
@@ -29,20 +39,21 @@ class ReservaController extends Controller
 
         // Obtener reservas existentes para sugerir vuelos basados en pasajeros
         $reservasExistentes = DB::select('
-            SELECT r.idPasajero, r.idVuelo, p.Nombre, p.Apellido, v.idVuelo as vuelo_id, v.Precio, v.FechaSalida,
-                   a_origen.Nombre as origen, a_destino.Nombre as destino
+            SELECT r.idPasajero, r.idVuelo, p.Nombre, p.Apellido, v.IdVuelo as vuelo_id, v.Precio, v.FechaSalida,
+                   a_origen.NombreAeropuerto as origen, a_destino.NombreAeropuerto as destino
             FROM reservas r
             JOIN pasajeros p ON r.idPasajero = p.idPasajero
             JOIN vuelo v ON r.idVuelo = v.idVuelo
-            LEFT JOIN aeropuertos a_origen ON v.idAeropuertoOrigen = a_origen.idAeropuerto
-            LEFT JOIN aeropuertos a_destino ON v.idAeropuertoDestino = a_destino.idAeropuerto
+            LEFT JOIN aeropuerto a_origen ON v.IdAeropuertoOrigen = a_origen.IdAeropuerto
+            LEFT JOIN aeropuerto a_destino ON v.IdAeropuertoDestino = a_destino.IdAeropuerto
             ORDER BY r.FechaReserva DESC
         ');
 
         // Calcular total acumulado de la reserva actual (si existe en sesión)
         $totalAcumulado = session('total_acumulado', 0);
 
-        // No sumar el precio del vuelo aquí porque ya está incluido en el boleto
+        // Sumar el MontoAnticipado al total acumulado para mostrar el total de la reserva
+        $totalReserva = $totalAcumulado;
 
         // Obtener valores de sesión para pre-llenar campos
         $pasajeroSeleccionado = session('pasajero_seleccionado');
@@ -57,7 +68,7 @@ class ReservaController extends Controller
 
         $vueloSeleccionado = session('vuelo_seleccionado');
 
-        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes', 'totalAcumulado', 'pasajeroSeleccionado', 'vueloSeleccionado'));
+        return view('reservas.create', compact('pasajeros', 'vuelos', 'reservasExistentes', 'totalAcumulado', 'totalReserva', 'pasajeroSeleccionado', 'vueloSeleccionado'));
     }
 
     /**
@@ -75,11 +86,19 @@ class ReservaController extends Controller
 
         $data = $request->all();
 
+        // Agregar el ID del usuario logueado
+        $data['user_id'] = auth()->id();
+
         // Calcular monto anticipado (10% del precio del vuelo)
         $vuelo = Vuelo::obtenerPorId($data['idVuelo']);
         if ($vuelo) {
             $data['MontoAnticipado'] = $vuelo->Precio * 0.10;
         }
+
+        // Sumar el MontoAnticipado al total acumulado de la reserva
+        $totalAcumulado = session('total_acumulado', 0);
+        $totalAcumulado += $data['MontoAnticipado'];
+        session(['total_acumulado' => $totalAcumulado]);
 
         // Generar ID automático para la reserva
         $data['idReserva'] = DB::select('SELECT COALESCE(MAX(idReserva), 0) + 1 as next_id FROM reservas')[0]->next_id;
@@ -91,8 +110,12 @@ class ReservaController extends Controller
             // Guardar ID de reserva en sesión para el pago
             session(['reserva_creada' => $data['idReserva']]);
 
-            // Redirigir a pago
-            return redirect()->route('pagos.create')->with('success', 'Reserva creada exitosamente. Ahora procesa el pago.');
+            // Retornar respuesta JSON con el ID de la reserva para manejar en JavaScript
+            return response()->json([
+                'success' => true,
+                'reserva_id' => $data['idReserva'],
+                'message' => 'Reserva creada exitosamente.'
+            ]);
         }
 
         // Limpiar la sesión después de crear la reserva
@@ -130,12 +153,12 @@ class ReservaController extends Controller
         // Obtener reservas existentes para sugerir vuelos basados en pasajeros
         $reservasExistentes = DB::select('
             SELECT r.idPasajero, r.idVuelo, p.Nombre, p.Apellido, v.idVuelo as vuelo_id, v.Precio, v.FechaSalida,
-                   a_origen.Nombre as origen, a_destino.Nombre as destino
+                   a_origen.NombreAeropuerto as origen, a_destino.NombreAeropuerto as destino
             FROM reservas r
             JOIN pasajeros p ON r.idPasajero = p.idPasajero
-            JOIN vuelo v ON r.idVuelo = v.idVuelo
-            LEFT JOIN aeropuertos a_origen ON v.idAeropuertoOrigen = a_origen.idAeropuerto
-            LEFT JOIN aeropuertos a_destino ON v.idAeropuertoDestino = a_destino.idAeropuerto
+            JOIN vuelo v ON r.IdVuelo = v.IdVuelo
+            LEFT JOIN aeropuerto a_origen ON v.IdAeropuertoOrigen = a_origen.IdAeropuerto
+            LEFT JOIN aeropuerto a_destino ON v.IdAeropuertoDestino = a_destino.IdAeropuerto
             ORDER BY r.FechaReserva DESC
         ');
 
@@ -156,6 +179,9 @@ class ReservaController extends Controller
         ]);
 
         $data = $request->all();
+
+        // Agregar el ID del usuario logueado
+        $data['user_id'] = auth()->id();
 
         // Calcular monto anticipado (10% del precio del vuelo)
         $vuelo = Vuelo::obtenerPorId($data['idVuelo']);
@@ -192,6 +218,53 @@ class ReservaController extends Controller
     }
 
     /**
+     * Generate PDF for the specified reserva.
+     */
+    public function generatePdf($id)
+    {
+        $reservaData = Reserva::obtenerPorId($id);
+        if (empty($reservaData)) {
+            abort(404);
+        }
+        $reserva = $reservaData[0];
+
+        // Obtener datos adicionales para la reserva
+        $pasajero = null;
+        $vuelo = null;
+
+        if ($reserva->idPasajero) {
+            $pasajeroData = DB::select('CALL Sp_Consulta_Pasajero(?)', [$reserva->idPasajero]);
+            if (!empty($pasajeroData)) {
+                $pasajero = $pasajeroData[0];
+            }
+        }
+
+        if ($reserva->idVuelo) {
+            $vueloData = DB::select('
+                SELECT v.*, ao.NombreAeropuerto as aeropuerto_origen, ad.NombreAeropuerto as aeropuerto_destino
+                FROM vuelo v
+                LEFT JOIN aeropuerto ao ON v.IdAeropuertoOrigen = ao.IdAeropuerto
+                LEFT JOIN aeropuerto ad ON v.IdAeropuertoDestino = ad.IdAeropuerto
+                WHERE v.IdVuelo = ?
+            ', [$reserva->idVuelo]);
+
+            if (!empty($vueloData)) {
+                $vuelo = $vueloData[0];
+            }
+        }
+
+        $data = [
+            'reserva' => $reserva,
+            'pasajero' => $pasajero,
+            'vuelo' => $vuelo,
+        ];
+
+        $pdf = Pdf::loadView('reservas.pdf', $data);
+
+        return $pdf->download('reserva_' . $id . '.pdf');
+    }
+
+    /**
      * Store a newly created resource and redirect to payment.
      */
     public function storeAndPay(Request $request)
@@ -205,6 +278,9 @@ class ReservaController extends Controller
         ]);
 
         $data = $request->all();
+
+        // Agregar el ID del usuario logueado
+        $data['user_id'] = auth()->id();
 
         // Calcular monto anticipado (10% del precio del vuelo)
         $vuelo = Vuelo::obtenerPorId($data['idVuelo']);

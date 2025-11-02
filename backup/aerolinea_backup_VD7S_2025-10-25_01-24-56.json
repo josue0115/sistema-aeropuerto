@@ -1,0 +1,12 @@
+{
+    "IdAerolinea": "VD7S",
+    "NombreAerolinea": "Avianca",
+    "Pais": "fef",
+    "Ciudad": "fef",
+    "Estado": "Activo",
+    "created_at": "2025-10-25T01:24:53.000000Z",
+    "updated_at": "2025-10-25T01:24:53.000000Z",
+    "deleted_at": "2025-10-25T01:24:56.893222Z",
+    "deleted_by": "Sistema",
+    "action": "DELETE"
+}
